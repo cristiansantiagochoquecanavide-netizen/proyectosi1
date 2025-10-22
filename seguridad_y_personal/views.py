@@ -3,7 +3,9 @@ from django.contrib import messages  # Sistema de mensajes flash (éxito/error/i
 from django.contrib.auth import logout  # Usamos logout para limpiar sesión de auth
 from .models import Usuario, Rol  # Modelos locales
 from .forms import LoginForm, UsuarioForm, RolForm  # Formularios locales
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from .models import Rol, Usuario, UsuarioRol, Bitacora
 from .serializers import RolSerializer, UsuarioSerializer, UsuarioRolSerializer, BitacoraSerializer
 
@@ -91,6 +93,103 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
 
+    @action(detail=False, methods=['post'])
+    def login(self, request):
+        """
+        CU1 (FRONT): Iniciar sesión vía API
+        Body: { correo, contrasena }
+        Efecto: guarda id del usuario en la sesión y devuelve datos básicos del usuario.
+        """
+        correo = request.data.get('correo')
+        contrasena = request.data.get('contrasena')
+        if not correo or not contrasena:
+            return Response({'detail': 'Correo y contraseña son obligatorios.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            usuario = Usuario.objects.get(correo=correo, contrasena=contrasena)
+            request.session['usuario_id'] = usuario.id_usuario
+            data = UsuarioSerializer(usuario).data
+            return Response({'message': 'Inicio de sesión correcto', 'usuario': data})
+        except Usuario.DoesNotExist:
+            return Response({'detail': 'Credenciales incorrectas'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'])
+    def logout(self, request):
+        """
+        CU2 (FRONT): Cerrar sesión vía API
+        """
+        logout(request)
+        request.session.flush()
+        return Response({'message': 'Sesión cerrada correctamente'})
+
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        """
+        Devuelve el usuario autenticado en la sesión, si existe.
+        Responde 401 si no hay sesión.
+        """
+        user_id = request.session.get('usuario_id')
+        if not user_id:
+            return Response({'detail': 'No autenticado'}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            usuario = Usuario.objects.get(pk=user_id)
+            return Response(UsuarioSerializer(usuario).data)
+        except Usuario.DoesNotExist:
+            return Response({'detail': 'No autenticado'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    @action(detail=False, methods=['get'])
+    def recepcionistas(self, request):
+        """
+        CU23: Gestionar recepcionista - Listar usuarios con rol 'recepcionista'.
+        """
+        recep_role = Rol.objects.filter(nombre_rol__iexact='recepcionista').first()
+        if not recep_role:
+            return Response([], status=status.HTTP_200_OK)
+        user_ids = UsuarioRol.objects.filter(id_rol=recep_role).values_list('id_usuario', flat=True)
+        usuarios = Usuario.objects.filter(pk__in=user_ids)
+        return Response(UsuarioSerializer(usuarios, many=True).data)
+
+    @action(detail=False, methods=['post'])
+    def crear_recepcionista(self, request):
+        """
+        CU23: Crear recepcionista - Crea un Usuario y le asigna el rol 'recepcionista'.
+        Body: { username, nombre, correo, contrasena, estado }
+        """
+        data = request.data
+        serializer = UsuarioSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        usuario = serializer.save()
+        # Asigna rol recepcionista
+        rol = Rol.objects.filter(nombre_rol__iexact='recepcionista').first()
+        if not rol:
+            rol = Rol.objects.create(nombre_rol='recepcionista', descripcion='Recepcionista')
+        UsuarioRol.objects.create(id_usuario=usuario, id_rol=rol)
+        # Bitácora
+        try:
+            Bitacora.objects.create(id_usuario=usuario, accion='Creación de recepcionista')
+        except Exception:
+            pass
+        return Response(UsuarioSerializer(usuario).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'])
+    def cambiar_contrasena(self, request, pk=None):
+        """
+        CU24: Cambiar contraseña para un Usuario del módulo de seguridad.
+        Body: { nueva_contrasena }
+        NOTA: Aquí se almacena en texto plano para ser consistente con el modelo existente.
+        """
+        usuario = self.get_object()
+        nueva = request.data.get('nueva_contrasena')
+        if not nueva or len(nueva) < 4:
+            return Response({'detail': 'La nueva contraseña es obligatoria y debe tener al menos 4 caracteres.'}, status=status.HTTP_400_BAD_REQUEST)
+        usuario.contrasena = nueva
+        usuario.save()
+        # Bitácora
+        try:
+            Bitacora.objects.create(id_usuario=usuario, accion='Cambio de contraseña')
+        except Exception:
+            pass
+        return Response({'detail': 'Contraseña actualizada correctamente'})
+
 class UsuarioRolViewSet(viewsets.ModelViewSet):
     queryset = UsuarioRol.objects.all()
     serializer_class = UsuarioRolSerializer
@@ -98,4 +197,6 @@ class UsuarioRolViewSet(viewsets.ModelViewSet):
 class BitacoraViewSet(viewsets.ModelViewSet):
     queryset = Bitacora.objects.all()
     serializer_class = BitacoraSerializer
+    # CU25: Ver bitácora - este ViewSet expone la bitácora completa.
+    # Se podrían agregar filtros y ordenamientos desde el frontend o con DRF FilterBackend si se instala django-filter.
 

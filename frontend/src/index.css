@@ -34,8 +34,7 @@ a:hover { opacity: .9; }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  display: block; /* Evitar centrado global que produce espacios raros */
   min-width: 320px;
   min-height: 100vh;
 }

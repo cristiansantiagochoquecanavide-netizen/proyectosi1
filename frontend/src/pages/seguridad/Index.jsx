@@ -3,8 +3,13 @@ import { List, ListItem, ListItemText, Paper, Typography, Divider, Alert, Circul
 import { apiGet } from '../../lib/api'
 
 const useCases = [
+  // Enlaces de administración
   { label: 'Usuarios (auth)', path: '/admin/auth/user/' },
   { label: 'Roles (app seguridad)', path: '/admin/seguridad_y_personal/rol/' },
+  // Enlaces a pantallas frontend de seguridad
+  { label: 'Recepcionistas (FRONT)', path: '/seguridad/recepcionistas' },
+  { label: 'Cambiar contraseña (FRONT)', path: '/seguridad/cambiar-contrasena' },
+  { label: 'Bitácora (FRONT)', path: '/seguridad/bitacora' },
 ]
 
 export default function Seguridad() {
@@ -41,7 +46,7 @@ export default function Seguridad() {
       <Typography variant="h5" gutterBottom>Seguridad y Personal - Casos de uso</Typography>
       <List>
         {useCases.map(u => (
-          <ListItem key={u.label} button component="a" href={u.path} target="_blank" rel="noreferrer">
+          <ListItem key={u.label} button component="a" href={u.path} target={u.path.startsWith('/admin') ? '_blank' : undefined} rel="noreferrer">
             <ListItemText primary={u.label} secondary={u.path} />
           </ListItem>
         ))}

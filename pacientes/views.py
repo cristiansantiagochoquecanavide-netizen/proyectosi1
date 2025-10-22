@@ -11,6 +11,9 @@ except Exception:  # django-filter puede no estar instalado
     DjangoFilterBackend = None
 from .models import HistorialClinica, ArchivoClinico
 from .serializers import PacienteSerializer, HistorialClinicaSerializer, ArchivoClinicoSerializer
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from citas.models import Cita
 
 def listado_pacientes(request):  # READ: lista todos los pacientes
     pacientes = Paciente.objects.all()  # QuerySet con todos los registros
@@ -49,6 +52,37 @@ class PacienteViewSet(viewsets.ModelViewSet):
     queryset = Paciente.objects.all()
     serializer_class = PacienteSerializer
 
+    @action(detail=True, methods=['get'])
+    def historial(self, request, pk=None):
+        """
+        CU6: Consultar historial del paciente
+        - Devuelve información básica del paciente
+        - Lista de citas (citas.Cita) asociadas
+        - Lista de archivos clínicos (pacientes.ArchivoClinico) asociados
+        """
+        paciente = self.get_object()
+        # Serializa el paciente
+        paciente_data = PacienteSerializer(paciente).data
+        # Obtiene y serializa citas del paciente
+        citas = Cita.objects.filter(id_paciente=paciente)
+        citas_data = [
+            {
+                'id_cita': c.id_cita,
+                'fecha': c.fecha,
+                'estado': c.estado,
+                'odontologo': c.id_odontologo.nombre if c.id_odontologo else None,
+            }
+            for c in citas
+        ]
+        # Obtiene y serializa archivos clínicos del paciente
+        archivos = ArchivoClinico.objects.filter(paciente=paciente)
+        archivos_data = ArchivoClinicoSerializer(archivos, many=True).data
+        return Response({
+            'paciente': paciente_data,
+            'citas': citas_data,
+            'archivos': archivos_data,
+        })
+
 class HistorialClinicaViewSet(viewsets.ModelViewSet):
     queryset = HistorialClinica.objects.all()
     serializer_class = HistorialClinicaSerializer
@@ -62,5 +96,9 @@ class ArchivoClinicoViewSet(viewsets.ModelViewSet):
     ordering_fields = ["fechaAdjunto"]
     ordering = ["-fechaAdjunto"]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    # Nota CU7: Para adjuntar documentos clínicos, hacer POST multipart a /pacientes/api/archivos/
+    # con los campos: paciente, nombreArchivo (opcional), tipoDocumento (opcional), descripcion (opcional) y rutaArchivo (el file).
+    # Este ViewSet ya acepta multipart y filtra por paciente.
 
 # Create your views here.
