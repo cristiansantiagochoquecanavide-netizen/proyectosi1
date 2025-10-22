@@ -1,0 +1,45 @@
+{% extends 'pacientes/base.html' %}
+{% block title %}Listado de pacientes{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="m-0">Pacientes</h2>
+  <a class="btn btn-primary" href="/pacientes/crear/">Nuevo paciente</a>
+  </div>
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Género</th>
+            <th style="width: 180px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for p in pacientes %}
+          <tr>
+            <td>{{ p.id_paciente }}</td>
+            <td>{{ p.nombre }}</td>
+            <td>{{ p.apellido }}</td>
+            <td>{{ p.get_genero_display }}</td>
+            <td>
+              <div class="btn-group btn-group-sm" role="group">
+                <a class="btn btn-outline-secondary" href="/admin/pacientes/paciente/{{ p.id_paciente }}/change/" target="_blank">Admin</a>
+                <a class="btn btn-outline-primary" href="/pacientes/editar/{{ p.id_paciente }}/">Editar</a>
+                <a class="btn btn-outline-danger" href="/pacientes/eliminar/{{ p.id_paciente }}/">Eliminar</a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-center py-4 text-muted">Sin pacientes</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  </div>
+{% endblock %}

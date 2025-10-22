@@ -1,0 +1,9 @@
+Crear un reporsitorio en GitHub
+$ git init
+$ git add .
+$ git config --global user.name "cristiansantiagochoquecanavide"
+$ git config --global user.email "cristiansantiagochoquecanavide@gmail.com"
+$ git config --list
+$ git commit -m "Mi primer commit"
+$ git remote add origin https://github.com/cristiansantiagochoquecanavide-netizen/Clinica-dental-Web.git
+$ git push origin master
