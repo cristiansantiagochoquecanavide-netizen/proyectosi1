@@ -20,6 +20,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from .views import csrf_token
 
+# Enrutamiento principal del proyecto.
+# - Deriva a las apps de dominio (citas, pacientes, seguridad).
+# - Expone /csrf para que el frontend obtenga la cookie CSRF en desarrollo.
+
 urlpatterns = [  # Rutas a nivel de proyecto
     path('admin/', admin.site.urls),  # Panel admin
     path('citas/', include('citas.urls')),  # Incluye rutas de citas

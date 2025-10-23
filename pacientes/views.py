@@ -9,11 +9,15 @@ try:
     from django_filters.rest_framework import DjangoFilterBackend
 except Exception:  # django-filter puede no estar instalado
     DjangoFilterBackend = None
-from .models import HistorialClinica, ArchivoClinico
+from .models import HistorialClinica, ArchivoClinico  # Modelos HistorialClinica y ArchivoClinico
 from .serializers import PacienteSerializer, HistorialClinicaSerializer, ArchivoClinicoSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from citas.models import Cita
+
+# Vistas HTML clásicas (templates) y ViewSets DRF.
+# - Las vistas HTML permiten uso tradicional de Django (render/redirect/forms).
+# - Los ViewSets DRF exponen APIs REST para el frontend React.
 
 def listado_pacientes(request):  # READ: lista todos los pacientes
     pacientes = Paciente.objects.all()  # QuerySet con todos los registros
@@ -52,6 +56,8 @@ class PacienteViewSet(viewsets.ModelViewSet):
     queryset = Paciente.objects.all()
     serializer_class = PacienteSerializer
 
+    # Acción adicional (CU6) que compone información del paciente,
+    # sus citas y sus archivos clínicos en una sola respuesta.
     @action(detail=True, methods=['get'])
     def historial(self, request, pk=None):
         """
@@ -96,6 +102,9 @@ class ArchivoClinicoViewSet(viewsets.ModelViewSet):
     ordering_fields = ["fechaAdjunto"]
     ordering = ["-fechaAdjunto"]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    # Este ViewSet soporta subida de archivos (multipart/form-data)
+    # para adjuntos clínicos, además de filtros/búsquedas básicas.
 
     # Nota CU7: Para adjuntar documentos clínicos, hacer POST multipart a /pacientes/api/archivos/
     # con los campos: paciente, nombreArchivo (opcional), tipoDocumento (opcional), descripcion (opcional) y rutaArchivo (el file).

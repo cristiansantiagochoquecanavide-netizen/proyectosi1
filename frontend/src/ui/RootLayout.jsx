@@ -11,6 +11,7 @@ import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import { useAuth } from './AuthContext'
 
+// Botón de navegación simple que resalta si la ruta está activa
 const NavButton = ({ to, label }) => {
   const location = useLocation()
   const active = location.pathname === to
@@ -58,6 +59,7 @@ function DropdownNav({ label, items }) {
   )
 }
 
+// Layout raíz de la SPA: AppBar + contenido + footer
 export default function RootLayout() {
   const { user, loading, logout } = useAuth()
   const navigate = useNavigate()
@@ -107,6 +109,8 @@ export default function RootLayout() {
                 label="Seguridad"
                 items={[
                   { to: '/seguridad', label: 'Panel' },
+                  { to: '/seguridad/usuarios', label: 'Gestionar Usuarios' },
+                  { to: '/seguridad/roles', label: 'Gestionar Roles' },
                   { to: '/seguridad/recepcionistas', label: 'Recepcionistas' },
                   { to: '/seguridad/cambiar-contrasena', label: 'Cambiar contraseña' },
                   { to: '/seguridad/bitacora', label: 'Bitácora' },

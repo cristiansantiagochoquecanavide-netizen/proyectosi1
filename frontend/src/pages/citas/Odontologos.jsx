@@ -4,14 +4,15 @@ import { apiGet, apiPost, apiPatch, apiDelete } from '../../lib/api'
 
 // CU22: Gestionar odontólogo
 // - CRUD completo contra /citas/api/odontologos/
-// - Nota: el vínculo con 'usuario_seguridad' se realiza automáticamente si asignas el rol 'odontologo' en Seguridad.
+//  el vínculo con 'usuario_seguridad' se realiza automáticamente si asignas el rol 'odontologo' en Seguridad.
+// - Esta vista usa edición en línea por fila para cambios rápidos.
 export default function Odontologos() {
   const [lista, setLista] = useState([])
   const [error, setError] = useState('')
   const [msg, setMsg] = useState('')
-  const [form, setForm] = useState({ nombre: '', email: '', especialidad: 'General', telefono: '' })
+  const [form, setForm] = useState({ nombre: '', email: '', especialidad: 'General', telefono: '', matriculaProfesional: '', username: '', contrasena: '' })
   const [editId, setEditId] = useState(null)
-  const [editForm, setEditForm] = useState({ nombre: '', email: '', especialidad: '', telefono: '' })
+  const [editForm, setEditForm] = useState({ nombre: '', email: '', especialidad: '', telefono: '', matriculaProfesional: '' })
 
   async function cargar() {
     try {
@@ -27,14 +28,14 @@ export default function Odontologos() {
     try {
       await apiPost('/citas/api/odontologos/', form)
       setMsg('Odontólogo creado')
-      setForm({ nombre: '', email: '', especialidad: 'General', telefono: '' })
+      setForm({ nombre: '', email: '', especialidad: 'General', telefono: '', matriculaProfesional: '', username: '', contrasena: '' })
       cargar()
     } catch (e) { setError(e.message) }
   }
 
   function startEdit(o) {
     setEditId(o.id_odontologo)
-    setEditForm({ nombre: o.nombre || '', email: o.email || '', especialidad: o.especialidad || '', telefono: o.telefono || '' })
+  setEditForm({ nombre: o.nombre || '', email: o.email || '', especialidad: o.especialidad || '', telefono: o.telefono || '', matriculaProfesional: o.matriculaProfesional || '' })
   }
 
   async function guardarEdicion() {
@@ -69,7 +70,10 @@ export default function Odontologos() {
         <TextField label="Email" size="small" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
         <TextField label="Especialidad" size="small" value={form.especialidad} onChange={e => setForm({ ...form, especialidad: e.target.value })} />
         <TextField label="Teléfono" size="small" value={form.telefono} onChange={e => setForm({ ...form, telefono: e.target.value })} />
-        <Button variant="contained" onClick={crear} disabled={!form.nombre || !form.email}>Crear</Button>
+        <TextField label="Matrícula Profesional" size="small" value={form.matriculaProfesional} onChange={e => setForm({ ...form, matriculaProfesional: e.target.value })} />
+        <TextField label="Username (usuario)" size="small" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} />
+        <TextField label="Contraseña" type="password" size="small" value={form.contrasena} onChange={e => setForm({ ...form, contrasena: e.target.value })} />
+  <Button variant="contained" onClick={crear} disabled={!form.nombre || !form.email || !form.telefono}>Crear</Button>
       </Stack>
 
       <Typography variant="h6">Listado</Typography>
@@ -81,6 +85,7 @@ export default function Odontologos() {
             <TableCell>Email</TableCell>
             <TableCell>Especialidad</TableCell>
             <TableCell>Teléfono</TableCell>
+            <TableCell>Matrícula</TableCell>
             <TableCell>Acciones</TableCell>
           </TableRow>
         </TableHead>
@@ -107,6 +112,11 @@ export default function Odontologos() {
                 {editId === o.id_odontologo ? (
                   <TextField size="small" value={editForm.telefono} onChange={e => setEditForm({ ...editForm, telefono: e.target.value })} />
                 ) : o.telefono}
+              </TableCell>
+              <TableCell>
+                {editId === o.id_odontologo ? (
+                  <TextField size="small" value={editForm.matriculaProfesional} onChange={e => setEditForm({ ...editForm, matriculaProfesional: e.target.value })} />
+                ) : (o.matriculaProfesional || '')}
               </TableCell>
               <TableCell>
                 {editId === o.id_odontologo ? (

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Alert, Stack, Button, ButtonGroup, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material'
 import { apiGet, apiPost, apiPut, apiDelete } from '../../lib/api'
 
+// Listado de Citas con CRUD inline y acción de Cancelar
 export default function Citas() {
   const [citas, setCitas] = useState([])
   const [pacientes, setPacientes] = useState({})
@@ -14,6 +15,7 @@ export default function Citas() {
   const [editId, setEditId] = useState(null)
   const [form, setForm] = useState({ fecha: '', id_paciente: '', id_odontologo: '', estado: 'pendiente' })
 
+  // Carga citas, pacientes y odontólogos para armar tablas y selects
   const cargar = async () => {
     setLoading(true)
     try {
@@ -60,6 +62,7 @@ export default function Citas() {
     setForm(prev => ({ ...prev, [name]: value }))
   }
 
+  // Crea o actualiza una cita (POST/PUT) y refresca el listado
   const guardar = async () => {
     if (!form.fecha || !form.id_paciente || !form.estado) {
       setError('Complete fecha, paciente y estado')
@@ -93,6 +96,7 @@ export default function Citas() {
     }
   }
 
+  // Elimina una cita y refresca el listado
   const eliminar = async (row) => {
     if (!window.confirm(`¿Eliminar la cita #${row.id_cita}?`)) return
     try {

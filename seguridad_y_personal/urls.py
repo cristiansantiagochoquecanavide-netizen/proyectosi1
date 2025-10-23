@@ -22,6 +22,8 @@ urlpatterns = [  # Lista de rutas de esta app
     # Roles
     path('roles/', views.listado_roles, name='listado_roles'),  # Lista roles
     path('roles/crear/', views.crear_rol, name='crear_rol'),  # Crear rol
+    path('roles/editar/<int:id_rol>/', views.editar_rol, name='editar_rol'),  # Editar rol
+    path('roles/eliminar/<int:id_rol>/', views.eliminar_rol, name='eliminar_rol'),  # Eliminar rol
 
     # API
     path('api/', include(router.urls)),  # Incluye las rutas de la API

@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import make_password
 
 # Create your models here.
 # Clase para los odontólogos
+# - Puede enlazarse a auth.User (Django) y a Usuario de Seguridad para sincronización.
 class Odontologo(models.Model):
     id_odontologo = models.AutoField(primary_key=True)  # ID único del odontólogo
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -13,6 +14,7 @@ class Odontologo(models.Model):
     especialidad = models.CharField(max_length=100)  # Especialidad del odontólogo
     telefono = models.CharField(max_length=15)  # Teléfono de contacto
     email = models.EmailField(max_length=255)  # Correo electrónico
+    matricula_profesional = models.CharField(max_length=100, blank=True, default='')  # Matrícula profesional
 
     def delete(self, *args, **kwargs):
         # Eliminar el usuario asociado si existe
@@ -25,6 +27,7 @@ class Odontologo(models.Model):
 
 
 # Clase para las citas
+# - Registra fecha/hora, paciente, odontólogo (opcional) y estado del proceso.
 class Cita(models.Model):
     id_cita = models.AutoField(primary_key=True)  # ID único de la cita
     fecha = models.DateTimeField()  # Fecha y hora de la cita

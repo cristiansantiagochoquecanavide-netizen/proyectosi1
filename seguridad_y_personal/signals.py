@@ -5,6 +5,10 @@ from .models import Usuario, UsuarioRol, Rol
 from citas.models import Odontologo
 
 
+# Señales para sincronizar roles de Seguridad con Odontólogos en Citas.
+# Objetivo: cuando un usuario recibe el rol "odontologo", exista un registro
+# Odontologo asociado; si pierde el rol (y no tiene otro vínculo con ese rol), eliminarlo.
+
 def _es_odontologo(rol: Rol) -> bool:
     try:
         return bool(rol and getattr(rol, 'nombre_rol', None) and rol.nombre_rol.strip().lower() == 'odontologo')

@@ -3,11 +3,13 @@ import { useEffect, useState } from 'react'
 import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Alert, Stack, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material'
 import { apiGet, apiPost, apiPut, apiDelete } from '../../lib/api'
 
+// Listado de Pacientes con CRUD en la misma vista (Dialog para crear/editar)
 export default function Pacientes() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // Carga la lista de pacientes desde la API
   const fetchPacientes = () => {
     setLoading(true)
     apiGet('/pacientes/api/pacientes/')
@@ -20,7 +22,7 @@ export default function Pacientes() {
     fetchPacientes()
   }, [])
 
-  // Dialog crear paciente
+  // Estado y handlers del Dialog (crear/editar paciente)
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState(false)

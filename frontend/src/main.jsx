@@ -11,6 +11,8 @@ import Recepcionistas from './pages/seguridad/Recepcionistas.jsx'
 import CambiarContrasena from './pages/seguridad/CambiarContrasena.jsx'
 import Bitacora from './pages/seguridad/Bitacora.jsx'
 import Login from './pages/seguridad/Login.jsx'
+import Usuarios from './pages/seguridad/Usuarios.jsx'
+import Roles from './pages/seguridad/Roles.jsx'
 import Reportes from './pages/reportes/Index.jsx'
 import Inventario from './pages/inventario/Index.jsx'
 import Facturacion from './pages/facturacion/Index.jsx'
@@ -21,6 +23,9 @@ import Odontologos from './pages/citas/Odontologos.jsx'
 import { AuthProvider } from './ui/AuthContext.jsx'
 import RequireAuth from './ui/RequireAuth.jsx'
 
+// Definición de rutas de la SPA.
+// - Las rutas privadas se envuelven con <RequireAuth> para exigir sesión.
+// - El layout raíz aporta AppBar/menús y contenedor de página.
 const router = createBrowserRouter([
   {
     path: '/',
@@ -34,6 +39,8 @@ const router = createBrowserRouter([
       { path: 'citas/solicitar', element: <RequireAuth><SolicitarCita /></RequireAuth> },
       { path: 'citas/odontologos', element: <RequireAuth><Odontologos /></RequireAuth> },
       { path: 'seguridad', element: <RequireAuth><Seguridad /></RequireAuth> },
+  { path: 'seguridad/usuarios', element: <RequireAuth><Usuarios /></RequireAuth> },
+  { path: 'seguridad/roles', element: <RequireAuth><Roles /></RequireAuth> },
       { path: 'seguridad/recepcionistas', element: <RequireAuth><Recepcionistas /></RequireAuth> },
       { path: 'seguridad/cambiar-contrasena', element: <RequireAuth><CambiarContrasena /></RequireAuth> },
       { path: 'seguridad/bitacora', element: <RequireAuth><Bitacora /></RequireAuth> },

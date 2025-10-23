@@ -4,6 +4,7 @@ import { apiGet, apiPost } from '../../lib/api'
 
 // CU9: Solicitar cita
 // - Formulario para crear una cita en estado 'pendiente'
+// - El backend valida conflictos de horario (±1 hora) para paciente y odontólogo
 export default function SolicitarCita() {
   const [pacienteId, setPacienteId] = useState('')
   const [fecha, setFecha] = useState('')

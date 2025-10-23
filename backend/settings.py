@@ -111,7 +111,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'es'
 
-# Opcional: ajusta a tu zona horaria local si lo deseas
+# Zona horaria y localización
+# - LANGUAGE_CODE en 'es' para interfaces/mensajes en español.
+# - TIME_ZONE puede ajustarse a la zona local según necesidad.
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
@@ -125,6 +127,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 # Media (archivos subidos por usuarios)
+# - MEDIA_URL y MEDIA_ROOT permiten servir archivos en desarrollo (por ejemplo, adjuntos clínicos).
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -135,7 +138,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Nota: cambio menor para forzar recarga del servidor en desarrollo.
 
-# CSRF: confiar en el origen del frontend (Vite) durante desarrollo
+# CSRF: confianza en orígenes del frontend (Vite) durante desarrollo
+# - Habilita los puertos de Vite para permitir solicitudes con cookies y CSRF desde localhost.
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',

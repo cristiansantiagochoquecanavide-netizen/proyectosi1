@@ -7,6 +7,8 @@ const useCases = [
   { label: 'Usuarios (auth)', path: '/admin/auth/user/' },
   { label: 'Roles (app seguridad)', path: '/admin/seguridad_y_personal/rol/' },
   // Enlaces a pantallas frontend de seguridad
+  { label: 'Gestionar Usuarios (FRONT)', path: '/seguridad/usuarios' },
+  { label: 'Gestionar Roles (FRONT)', path: '/seguridad/roles' },
   { label: 'Recepcionistas (FRONT)', path: '/seguridad/recepcionistas' },
   { label: 'Cambiar contraseña (FRONT)', path: '/seguridad/cambiar-contrasena' },
   { label: 'Bitácora (FRONT)', path: '/seguridad/bitacora' },

@@ -1,3 +1,7 @@
+// Helpers de red para consumir el backend con sesiones y CSRF.
+// - Obtienen la cookie csrftoken con /csrf cuando es necesario.
+// - Envían credenciales para mantener la sesión de Django.
+
 function getCookie(name) {
   const value = `; ${document.cookie}`
   const parts = value.split(`; ${name}=`)
@@ -15,6 +19,7 @@ async function ensureCsrfCookie() {
   }
 }
 
+// GET JSON con cookies de sesión
 export async function apiGet(path) {
   const res = await fetch(path, {
     credentials: 'include',
@@ -26,6 +31,7 @@ export async function apiGet(path) {
   return res.json()
 }
 
+// POST JSON con CSRF
 export async function apiPost(path, data) {
   await ensureCsrfCookie()
   const csrftoken = getCookie('csrftoken')
@@ -45,6 +51,7 @@ export async function apiPost(path, data) {
   return res.json()
 }
 
+// POST multipart/form-data (subida de archivos) con CSRF
 export async function apiPostForm(path, formData) {
   await ensureCsrfCookie()
   const csrftoken = getCookie('csrftoken')
@@ -61,6 +68,7 @@ export async function apiPostForm(path, formData) {
   return res.json()
 }
 
+// PUT JSON con CSRF
 export async function apiPut(path, data) {
   await ensureCsrfCookie()
   const csrftoken = getCookie('csrftoken')
@@ -80,6 +88,7 @@ export async function apiPut(path, data) {
   return res.json()
 }
 
+// PATCH JSON con CSRF
 export async function apiPatch(path, data) {
   await ensureCsrfCookie()
   const csrftoken = getCookie('csrftoken')
@@ -99,6 +108,7 @@ export async function apiPatch(path, data) {
   return res.json()
 }
 
+// DELETE con CSRF
 export async function apiDelete(path) {
   await ensureCsrfCookie()
   const csrftoken = getCookie('csrftoken')

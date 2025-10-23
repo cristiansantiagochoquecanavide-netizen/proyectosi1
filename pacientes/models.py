@@ -1,6 +1,6 @@
 from django.db import models
 
-# Create your models here.
+# Modelos del dominio de Pacientes: datos básicos, historial clínico y archivos adjuntos.
 class Paciente(models.Model):
     id_paciente = models.AutoField(primary_key=True)  # ID único del paciente
     nombre = models.CharField(max_length=255)  # Nombre del paciente

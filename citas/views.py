@@ -8,7 +8,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Odontologo, Cita, Disponibilidad
 from .serializers import OdontologoSerializer, CitaSerializer, DisponibilidadSerializer
-from seguridad_y_personal.models import Bitacora, Usuario
+from seguridad_y_personal.models import Bitacora, Usuario, Rol, UsuarioRol
+
+# Este módulo combina views HTML clásicas (para compatibilidad) y APIs DRF.
+# El frontend moderno consume principalmente los ViewSets.
 
 def listado_citas(request):  # READ: lista de citas
     citas = Cita.objects.all()  # Todas las citas
@@ -48,6 +51,129 @@ class OdontologoViewSet(viewsets.ModelViewSet):
     serializer_class = OdontologoSerializer
     # CU22: Gestionar odontólogo - este ViewSet expone CRUD completo sobre Odontologo.
     # Puedes usar filtros básicos desde el frontend (e.g., ?search=nombre) si añades SearchFilter aquí.
+
+    # Bitácora: registrar creación/edición/eliminación de odontólogos
+    def _actor(self, request):
+        try:
+            user_id = request.session.get('usuario_id')
+            if not user_id:
+                return None
+            return Usuario.objects.filter(pk=user_id).first()
+        except Exception:
+            return None
+
+    def perform_create(self, serializer):
+        # Guardar odontólogo
+        odontologo = serializer.save()
+        # Crear/actualizar usuario de seguridad si vienen username/contrasena
+        try:
+            username = self.request.data.get('username', '')
+            contrasena = self.request.data.get('contrasena', '')
+            email = odontologo.email or ''
+            if email and (username or contrasena):
+                usuario_sec, created = Usuario.objects.get_or_create(
+                    correo=email,
+                    defaults={
+                        'username': username or email,
+                        'nombre': odontologo.nombre or username or email,
+                        'contrasena': contrasena or '',
+                        'estado': 'activo',
+                    }
+                )
+                # Si ya existía, actualizar datos si llegaron
+                cambios = False
+                if username and usuario_sec.username != username:
+                    usuario_sec.username = username; cambios = True
+                if contrasena and usuario_sec.contrasena != contrasena:
+                    usuario_sec.contrasena = contrasena; cambios = True
+                if (odontologo.nombre or '') and usuario_sec.nombre != odontologo.nombre:
+                    usuario_sec.nombre = odontologo.nombre; cambios = True
+                if cambios:
+                    usuario_sec.save()
+                # Asignar rol odontologo
+                rol = Rol.objects.filter(nombre_rol__iexact='odontologo').first()
+                if not rol:
+                    rol = Rol.objects.create(nombre_rol='odontologo', descripcion='Odontólogo')
+                UsuarioRol.objects.get_or_create(id_usuario=usuario_sec, id_rol=rol)
+                # Vincular al odontólogo
+                if odontologo.usuario_seguridad_id != usuario_sec.id_usuario:
+                    odontologo.usuario_seguridad = usuario_sec
+                    odontologo.save(update_fields=['usuario_seguridad'])
+        except Exception:
+            # No romper el flujo de creación por problemas de sincronización
+            pass
+        try:
+            actor = self._actor(self.request)
+            if actor:
+                Bitacora.objects.create(
+                    id_usuario=actor,
+                    accion=f"Creación de odontólogo: {getattr(odontologo, 'nombre', '')} (id={getattr(odontologo, 'id_odontologo', '')})",
+                )
+        except Exception:
+            pass
+
+    def perform_update(self, serializer):
+        odontologo = serializer.save()
+        # Actualizar usuario de seguridad si se envían username/contrasena
+        try:
+            username = self.request.data.get('username', '')
+            contrasena = self.request.data.get('contrasena', '')
+            email = odontologo.email or ''
+            if email and (username or contrasena):
+                usuario_sec = Usuario.objects.filter(correo=email).first()
+                if not usuario_sec:
+                    # Crear si no existe
+                    usuario_sec = Usuario.objects.create(
+                        correo=email,
+                        username=username or email,
+                        nombre=odontologo.nombre or username or email,
+                        contrasena=contrasena or '',
+                        estado='activo',
+                    )
+                else:
+                    cambios = False
+                    if username and usuario_sec.username != username:
+                        usuario_sec.username = username; cambios = True
+                    if contrasena and usuario_sec.contrasena != contrasena:
+                        usuario_sec.contrasena = contrasena; cambios = True
+                    if (odontologo.nombre or '') and usuario_sec.nombre != odontologo.nombre:
+                        usuario_sec.nombre = odontologo.nombre; cambios = True
+                    if cambios:
+                        usuario_sec.save()
+                # Asignar rol odontologo si no lo tiene
+                rol = Rol.objects.filter(nombre_rol__iexact='odontologo').first()
+                if not rol:
+                    rol = Rol.objects.create(nombre_rol='odontologo', descripcion='Odontólogo')
+                UsuarioRol.objects.get_or_create(id_usuario=usuario_sec, id_rol=rol)
+                # Vincular al odontólogo
+                if odontologo.usuario_seguridad_id != usuario_sec.id_usuario:
+                    odontologo.usuario_seguridad = usuario_sec
+                    odontologo.save(update_fields=['usuario_seguridad'])
+        except Exception:
+            pass
+        try:
+            actor = self._actor(self.request)
+            if actor:
+                Bitacora.objects.create(
+                    id_usuario=actor,
+                    accion=f"Edición de odontólogo: {getattr(odontologo, 'nombre', '')} (id={getattr(odontologo, 'id_odontologo', '')})",
+                )
+        except Exception:
+            pass
+
+    def perform_destroy(self, instance):
+        nombre = getattr(instance, 'nombre', '')
+        oid = getattr(instance, 'id_odontologo', '')
+        try:
+            actor = self._actor(self.request)
+            if actor:
+                Bitacora.objects.create(
+                    id_usuario=actor,
+                    accion=f"Eliminación de odontólogo: {nombre} (id={oid})",
+                )
+        except Exception:
+            pass
+        instance.delete()
 
 class CitaViewSet(viewsets.ModelViewSet):
     queryset = Cita.objects.all()
