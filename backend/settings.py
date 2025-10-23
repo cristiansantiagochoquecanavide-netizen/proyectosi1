@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=9ve-47ldlm1j*u6blxybn^#et%&pfwzj&8n2y@!1zp_p@+t)m'
+# Cargar variables desde .env si existe (sin dependencias externas)
+ENV_FILE = Path(__file__).resolve().parent.parent / '.env'
+if ENV_FILE.exists():
+    try:
+        for _line in ENV_FILE.read_text(encoding='utf-8').splitlines():
+            _line = _line.strip()
+            if not _line or _line.startswith('#'):
+                continue
+            if '=' in _line:
+                k, v = _line.split('=', 1)
+                os.environ.setdefault(k.strip(), v.strip())
+    except Exception:
+        # No romper si .env no es legible
+        pass
+
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-=9ve-47ldlm1j*u6blxybn^#et%&pfwzj&8n2y@!1zp_p@+t)m')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() in ('1', 'true', 'yes', 'on')
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',') if h.strip()]
 
 
 # Application definition
@@ -77,12 +93,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'clinicadb2',
-        'USER':'postgres',
-        'PASSWORD':'CAMPEON',
-        'HOST':'localhost',
-        'PORT':'5432'
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': os.getenv('DB_NAME', 'clinicadb2'),
+        'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'CAMPEON'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
@@ -140,10 +156,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CSRF: confianza en orígenes del frontend (Vite) durante desarrollo
 # - Habilita los puertos de Vite para permitir solicitudes con cookies y CSRF desde localhost.
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    # Puertos alternativos cuando Vite se ejecuta en otro puerto
-    'http://localhost:5174',
-    'http://127.0.0.1:5174',
-]
+_CSRF_ORIGINS_ENV = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if _CSRF_ORIGINS_ENV:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in _CSRF_ORIGINS_ENV.split(',') if o.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        # Puertos alternativos cuando Vite se ejecuta en otro puerto
+        'http://localhost:5174',
+        'http://127.0.0.1:5174',
+    ]
