@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from .models import Odontologo, Cita, Disponibilidad
 from .serializers import OdontologoSerializer, CitaSerializer, DisponibilidadSerializer
 from seguridad_y_personal.models import Bitacora, Usuario, Rol, UsuarioRol
+from seguridad_y_personal.permissions import RolesPermission
 
 # Este módulo combina views HTML clásicas (para compatibilidad) y APIs DRF.
 # El frontend moderno consume principalmente los ViewSets.
@@ -49,6 +50,16 @@ def eliminar_cita(request, id_cita):  # DELETE: eliminar cita
 class OdontologoViewSet(viewsets.ModelViewSet):
     queryset = Odontologo.objects.all()
     serializer_class = OdontologoSerializer
+    permission_classes = [RolesPermission]
+    roles_per_action = {
+        # CU22: solo administrador gestiona odontólogos
+        'list': ['administrador'],
+        'retrieve': ['administrador'],
+        'create': ['administrador'],
+        'update': ['administrador'],
+        'partial_update': ['administrador'],
+        'destroy': ['administrador'],
+    }
     # CU22: Gestionar odontólogo - este ViewSet expone CRUD completo sobre Odontologo.
     # Puedes usar filtros básicos desde el frontend (e.g., ?search=nombre) si añades SearchFilter aquí.
 
@@ -178,6 +189,18 @@ class OdontologoViewSet(viewsets.ModelViewSet):
 class CitaViewSet(viewsets.ModelViewSet):
     queryset = Cita.objects.all()
     serializer_class = CitaSerializer
+    permission_classes = [RolesPermission]
+    roles_per_action = {
+        # CU4/CU9: recepcionista gestiona y solicita citas
+        'list': ['recepcionista'],
+        'retrieve': ['recepcionista'],
+        'create': ['recepcionista'],
+        'update': ['recepcionista'],
+        'partial_update': ['recepcionista'],
+        'destroy': ['recepcionista'],
+        'cancelar': ['recepcionista'],
+        'solicitar': ['recepcionista'],
+    }
 
     @action(detail=True, methods=['post'])
     def cancelar(self, request, pk=None):
@@ -274,3 +297,5 @@ class CitaViewSet(viewsets.ModelViewSet):
 class DisponibilidadViewSet(viewsets.ModelViewSet):
     queryset = Disponibilidad.objects.all()
     serializer_class = DisponibilidadSerializer
+    permission_classes = [RolesPermission]
+    # No mapeamos explícito: por defecto permitido. Si se requiere, puede agregarse roles_per_action.

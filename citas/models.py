@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
+from django.core.validators import RegexValidator
 
 # Create your models here.
 # Clase para los odontólogos
@@ -14,7 +15,14 @@ class Odontologo(models.Model):
     especialidad = models.CharField(max_length=100)  # Especialidad del odontólogo
     telefono = models.CharField(max_length=15)  # Teléfono de contacto
     email = models.EmailField(max_length=255)  # Correo electrónico
-    matricula_profesional = models.CharField(max_length=100, blank=True, default='')  # Matrícula profesional
+    matricula_profesional = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        validators=[
+            RegexValidator(r'^[0-9A-Za-z]*$', 'Solo letras y números están permitidos.')
+        ]
+    )  # Matrícula profesional (solo letras y números)
 
     def delete(self, *args, **kwargs):
         # Eliminar el usuario asociado si existe

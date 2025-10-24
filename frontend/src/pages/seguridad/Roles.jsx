@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, Alert, Stack, TextField, Button } from '@mui/material'
+import { Paper, Typography, Table, TableHead, TableRow, TableCell, TableBody, Alert, Stack, TextField, Button, MenuItem, Divider } from '@mui/material'
 import { apiGet, apiPost, apiPatch, apiDelete } from '../../lib/api'
 
 // CU4: Gestionar Roles
@@ -14,6 +14,12 @@ export default function Roles() {
   const [editId, setEditId] = useState(null)
   const [editForm, setEditForm] = useState({ nombre_rol: '', descripcion: '' })
 
+  // Estado para "Asignar rol a usuario"
+  const [elegibles, setElegibles] = useState([])
+  const [roles, setRoles] = useState([])
+  const [selUsuario, setSelUsuario] = useState('')
+  const [selRol, setSelRol] = useState('')
+
   async function cargar() {
     try {
       const data = await apiGet('/seguridad/api/roles/')
@@ -22,6 +28,20 @@ export default function Roles() {
     } catch (e) { setError(e.message) }
   }
   useEffect(() => { cargar() }, [])
+
+  async function cargarElegiblesYRoles() {
+    try {
+      const [u, r] = await Promise.all([
+        apiGet('/seguridad/api/usuarios/elegibles_para_roles/'),
+        apiGet('/seguridad/api/roles/'),
+      ])
+      setElegibles(u)
+      setRoles(r)
+    } catch (e) {
+      // error ya se maneja arriba si corresponde
+    }
+  }
+  useEffect(() => { cargarElegiblesYRoles() }, [])
 
   async function crear() {
     setMsg(''); setError('')
@@ -58,6 +78,18 @@ export default function Roles() {
     } catch (e) { setError(e.message) }
   }
 
+  async function asignarRol() {
+    if (!selUsuario || !selRol) return
+    setMsg(''); setError('')
+    try {
+      await apiPost('/seguridad/api/usuarios_roles/', { id_usuario: selUsuario, id_rol: selRol })
+      setMsg('Rol asignado correctamente')
+      setSelUsuario(''); setSelRol('')
+      // refrescar listas
+      cargarElegiblesYRoles()
+    } catch (e) { setError(e.message) }
+  }
+
   return (
     <Paper sx={{ p: 3 }}>
       <Typography variant="h5" gutterBottom>Gestionar Roles</Typography>
@@ -71,7 +103,7 @@ export default function Roles() {
         <Button variant="contained" onClick={crear} disabled={!form.nombre_rol}>Crear</Button>
       </Stack>
 
-      <Typography variant="h6">Listado</Typography>
+  <Typography variant="h6">Listado</Typography>
       <Table size="small">
         <TableHead>
           <TableRow>
@@ -115,6 +147,29 @@ export default function Roles() {
           )}
         </TableBody>
       </Table>
+
+      <Divider sx={{ my: 3 }} />
+      <Typography variant="h6">Asignar rol a usuario</Typography>
+      <Typography variant="body2" sx={{ mb: 1 }}>
+        Solo se muestran usuarios elegibles: se excluyen los Recepcionistas, los Odontólogos y los vinculados a un odontólogo.
+      </Typography>
+      <Stack spacing={2} direction="row" sx={{ flexWrap: 'wrap', gap: 2, mb: 2 }}>
+        <TextField select size="small" label="Usuario" value={selUsuario} onChange={e => setSelUsuario(e.target.value)} sx={{ minWidth: 280 }}>
+          {elegibles.map(u => (
+            <MenuItem key={u.id_usuario} value={u.id_usuario}>
+              {u.nombre} ({u.username}) - {u.correo}
+            </MenuItem>
+          ))}
+          {elegibles.length === 0 && <MenuItem value="" disabled>Sin usuarios elegibles</MenuItem>}
+        </TextField>
+        <TextField select size="small" label="Rol" value={selRol} onChange={e => setSelRol(e.target.value)} sx={{ minWidth: 220 }}>
+          {roles.map(r => (
+            <MenuItem key={r.id_rol} value={r.id_rol}>{r.nombre_rol}</MenuItem>
+          ))}
+          {roles.length === 0 && <MenuItem value="" disabled>Sin roles</MenuItem>}
+        </TextField>
+        <Button variant="contained" onClick={asignarRol} disabled={!selUsuario || !selRol}>Asignar</Button>
+      </Stack>
     </Paper>
   )
 }

@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -43,3 +44,12 @@ class Bitacora(models.Model):
 
     def __str__(self):
         return f"Bitácora de {self.id_usuario.nombre} - {self.fecha_accion}"
+
+
+# Perfil para usuarios de autenticación nativa (auth.User) para almacenar teléfono
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
+    telefono = models.CharField(max_length=20, blank=True, default='')
+
+    def __str__(self):
+        return f"Perfil de {self.user.username}"

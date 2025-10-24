@@ -20,12 +20,18 @@ async function ensureCsrfCookie() {
 }
 
 // GET JSON con cookies de sesión
+function maybeAlertUnauthorized(status, text) {
+  // No-op: desactivado para no mostrar ventanillas de advertencia de permisos
+  return
+}
+
 export async function apiGet(path) {
   const res = await fetch(path, {
     credentials: 'include',
   })
   if (!res.ok) {
     const text = await res.text().catch(() => '')
+    maybeAlertUnauthorized(res.status, text)
     throw new Error(`GET ${path} -> ${res.status} ${res.statusText} ${text}`)
   }
   return res.json()
@@ -46,6 +52,7 @@ export async function apiPost(path, data) {
   })
   if (!res.ok) {
     const text = await res.text().catch(() => '')
+    maybeAlertUnauthorized(res.status, text)
     throw new Error(`POST ${path} -> ${res.status} ${res.statusText} ${text}`)
   }
   return res.json()
@@ -63,6 +70,7 @@ export async function apiPostForm(path, formData) {
   })
   if (!res.ok) {
     const text = await res.text().catch(() => '')
+    maybeAlertUnauthorized(res.status, text)
     throw new Error(`POST ${path} -> ${res.status} ${res.statusText} ${text}`)
   }
   return res.json()
@@ -83,6 +91,7 @@ export async function apiPut(path, data) {
   })
   if (!res.ok) {
     const text = await res.text().catch(() => '')
+    maybeAlertUnauthorized(res.status, text)
     throw new Error(`PUT ${path} -> ${res.status} ${res.statusText} ${text}`)
   }
   return res.json()
@@ -103,6 +112,7 @@ export async function apiPatch(path, data) {
   })
   if (!res.ok) {
     const text = await res.text().catch(() => '')
+    maybeAlertUnauthorized(res.status, text)
     throw new Error(`PATCH ${path} -> ${res.status} ${res.statusText} ${text}`)
   }
   return res.json()
@@ -119,6 +129,7 @@ export async function apiDelete(path) {
   })
   if (!res.ok) {
     const text = await res.text().catch(() => '')
+    maybeAlertUnauthorized(res.status, text)
     throw new Error(`DELETE ${path} -> ${res.status} ${res.statusText} ${text}`)
   }
   return true

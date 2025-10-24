@@ -14,6 +14,7 @@ from .serializers import PacienteSerializer, HistorialClinicaSerializer, Archivo
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from citas.models import Cita
+from seguridad_y_personal.permissions import RolesPermission
 
 # Vistas HTML clásicas (templates) y ViewSets DRF.
 # - Las vistas HTML permiten uso tradicional de Django (render/redirect/forms).
@@ -55,6 +56,18 @@ def eliminar_paciente(request, id_paciente):  # DELETE: elimina un paciente
 class PacienteViewSet(viewsets.ModelViewSet):
     queryset = Paciente.objects.all()
     serializer_class = PacienteSerializer
+    permission_classes = [RolesPermission]
+    roles_per_action = {
+        # CU5: recepcionista gestiona pacientes
+        'list': ['recepcionista'],
+        'retrieve': ['recepcionista'],
+        'create': ['recepcionista'],
+        'update': ['recepcionista'],
+        'partial_update': ['recepcionista'],
+        'destroy': ['recepcionista'],
+        # CU6: historial del paciente, exclusivo para odontólogo
+        'historial': ['odontologo'],
+    }
 
     # Acción adicional (CU6) que compone información del paciente,
     # sus citas y sus archivos clínicos en una sola respuesta.
@@ -92,6 +105,11 @@ class PacienteViewSet(viewsets.ModelViewSet):
 class HistorialClinicaViewSet(viewsets.ModelViewSet):
     queryset = HistorialClinica.objects.all()
     serializer_class = HistorialClinicaSerializer
+    permission_classes = [RolesPermission]
+    roles_per_action = {
+        # No se especifica acceso general; por defecto permitido si no mapeado.
+        # Si quieres restringir lectura/edición, define aquí las reglas.
+    }
 
 class ArchivoClinicoViewSet(viewsets.ModelViewSet):
     queryset = ArchivoClinico.objects.all()   # pylint: disable=no-member
@@ -102,6 +120,16 @@ class ArchivoClinicoViewSet(viewsets.ModelViewSet):
     ordering_fields = ["fechaAdjunto"]
     ordering = ["-fechaAdjunto"]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+    permission_classes = [RolesPermission]
+    roles_per_action = {
+        # CU7: Adjuntar documentos clínicos: odontólogo y recepcionista
+        'list': ['odontologo', 'recepcionista'],
+        'retrieve': ['odontologo', 'recepcionista'],
+        'create': ['odontologo', 'recepcionista'],
+        'update': ['odontologo', 'recepcionista'],
+        'partial_update': ['odontologo', 'recepcionista'],
+        'destroy': ['odontologo', 'recepcionista'],
+    }
 
     # Este ViewSet soporta subida de archivos (multipart/form-data)
     # para adjuntos clínicos, además de filtros/búsquedas básicas.

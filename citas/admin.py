@@ -4,8 +4,8 @@ from .forms import OdontologoForm
 
 class OdontologoAdmin(admin.ModelAdmin):
     form = OdontologoForm
-    list_display = ('nombre', 'especialidad', 'telefono', 'email')
-    search_fields = ('nombre', 'especialidad')
+    list_display = ('nombre', 'especialidad', 'telefono', 'email', 'matricula_profesional')
+    search_fields = ('nombre', 'especialidad', 'matricula_profesional', 'email')
 
 class CitaAdmin(admin.ModelAdmin):
     pass  # Sin filtro, muestra todos los odontólogos

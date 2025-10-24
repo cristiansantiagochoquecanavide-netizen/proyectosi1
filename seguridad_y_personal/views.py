@@ -9,6 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Rol, Usuario, UsuarioRol, Bitacora
 from .serializers import RolSerializer, UsuarioSerializer, UsuarioRolSerializer, BitacoraSerializer
+from .permissions import RolesPermission
 
 # Este módulo expone vistas HTML clásicas (para compatibilidad) y APIs DRF
 # pensadas para el frontend React (login/logout/me, recepcionistas, cambiar contraseña, bitácora).
@@ -174,6 +175,8 @@ def eliminar_rol(request, id_rol):  # Delete (rol)
 class RolViewSet(viewsets.ModelViewSet):
     queryset = Rol.objects.all()
     serializer_class = RolSerializer
+    permission_classes = [RolesPermission]
+    # Permisos: no restringimos explícitamente (por ahora), acciones no mapeadas quedan permitidas.
 
     # Auditar ediciones y eliminaciones de roles
     def perform_update(self, serializer):
@@ -204,6 +207,18 @@ class RolViewSet(viewsets.ModelViewSet):
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
+    permission_classes = [RolesPermission]
+    # Acciones sin autenticación (login/logout/me usan sesión propia)
+    allow_unauthenticated_actions = ['login', 'logout', 'me']
+    roles_per_action = {
+        # CU23
+        'recepcionistas': ['administrador'],
+        'crear_recepcionista': ['administrador'],
+        # CU24
+        'cambiar_contrasena': ['administrador', 'odontologo', 'recepcionista'],
+        # Asignación de roles (consulta de elegibles)
+        'elegibles_para_roles': ['administrador'],
+    }
 
     # Registrar en bitácora la creación de usuarios vía API
     def perform_create(self, serializer):
@@ -240,6 +255,33 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         except Exception:
             pass
         instance.delete()
+
+    @action(detail=False, methods=['get'])
+    def elegibles_para_roles(self, request):
+        """Lista de usuarios elegibles para asignación de roles desde el frontend de "Gestionar roles".
+        Exclusiones:
+        - Usuarios que ya tienen rol 'odontologo' o 'recepcionista'.
+        - Usuarios que están vinculados a un Odontologo (citas.Odontologo.usuario_seguridad no nulo).
+        """
+        # IDs con rol odontologo o recepcionista
+        ids_excluir = set(
+            UsuarioRol.objects.filter(
+                id_rol__nombre_rol__iregex=r'^(odontologo|recepcionista)$'
+            ).values_list('id_usuario', flat=True)
+        )
+        try:
+            from citas.models import Odontologo
+            ids_odonto = set(
+                Odontologo.objects.exclude(usuario_seguridad__isnull=True)
+                .values_list('usuario_seguridad_id', flat=True)
+            )
+            ids_excluir |= ids_odonto
+        except Exception:
+            pass
+
+        usuarios = Usuario.objects.exclude(id_usuario__in=list(ids_excluir))
+        data = UsuarioSerializer(usuarios, many=True).data
+        return Response(data)
 
     @action(detail=False, methods=['post'])
     def login(self, request):
@@ -375,10 +417,29 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 class UsuarioRolViewSet(viewsets.ModelViewSet):
     queryset = UsuarioRol.objects.all()
     serializer_class = UsuarioRolSerializer
+    permission_classes = [RolesPermission]
+    roles_per_action = {
+        'list': ['administrador'],
+        'retrieve': ['administrador'],
+        'create': ['administrador'],
+        'update': ['administrador'],
+        'partial_update': ['administrador'],
+        'destroy': ['administrador'],
+    }
 
 class BitacoraViewSet(viewsets.ModelViewSet):
     queryset = Bitacora.objects.all()
     serializer_class = BitacoraSerializer
+    permission_classes = [RolesPermission]
+    roles_per_action = {
+        # CU25: solo administrador puede ver/gestionar la bitácora
+        'list': ['administrador'],
+        'retrieve': ['administrador'],
+        'create': ['administrador'],
+        'update': ['administrador'],
+        'partial_update': ['administrador'],
+        'destroy': ['administrador'],
+    }
     # CU25: Ver bitácora - este ViewSet expone la bitácora completa.
     # Se podrían agregar filtros y ordenamientos desde el frontend o con DRF FilterBackend si se instala django-filter.
 

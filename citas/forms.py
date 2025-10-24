@@ -20,7 +20,7 @@ class OdontologoForm(forms.ModelForm):
 
     class Meta:
         model = Odontologo
-        fields = ['username', 'password', 'nombre', 'especialidad', 'telefono', 'email']
+        fields = ['username', 'password', 'nombre', 'especialidad', 'telefono', 'email', 'matricula_profesional']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

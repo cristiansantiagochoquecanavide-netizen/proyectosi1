@@ -31,6 +31,7 @@ if ENV_FILE.exists():
                 continue
             if '=' in _line:
                 k, v = _line.split('=', 1)
+                # Comportamiento anterior: no sobreescribir variables ya definidas en el entorno
                 os.environ.setdefault(k.strip(), v.strip())
     except Exception:
         # No romper si .env no es legible
@@ -47,7 +48,7 @@ ALLOWED_HOSTS = [h.strip() for h in os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1
 # Application definition
 
 INSTALLED_APPS = [
-    'seguridad_y_personal',
+    'seguridad_y_personal.apps.SeguridadYPersonalConfig',
     'pacientes',
     'citas',
     'django.contrib.admin',
@@ -101,6 +102,11 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
+
+# Si usamos Postgres gestionado (p.ej., Render), exigir SSL por defecto
+if DATABASES['default']['ENGINE'].endswith('postgresql'):
+    DATABASES['default'].setdefault('OPTIONS', {})
+    DATABASES['default']['OPTIONS'].setdefault('sslmode', os.getenv('DB_SSLMODE', 'require'))
 
 
 # Password validation
