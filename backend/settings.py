@@ -201,3 +201,19 @@ else:
 
 # Permitir cookies en peticiones CORS (necesario para sesiones)
 CORS_ALLOW_CREDENTIALS = True
+
+# Configuración de cookies de sesión para cross-origin (producción)
+# Permite que las cookies funcionen entre dominios diferentes en Render
+if not DEBUG:
+    # SameSite=None es necesario para cookies cross-site (frontend y backend en dominios diferentes)
+    SESSION_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SAMESITE = 'None'
+    # Secure=True requiere HTTPS (necesario cuando SameSite=None)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # Permitir que el frontend acceda a la cookie CSRF desde JavaScript
+    CSRF_COOKIE_HTTPONLY = False
+else:
+    # En desarrollo local (mismo dominio), configuración por defecto
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = 'Lax'
