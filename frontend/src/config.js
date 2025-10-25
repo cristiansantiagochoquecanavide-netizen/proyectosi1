@@ -7,7 +7,10 @@ const apiUrl = import.meta.env.VITE_API_URL;
 
 // En desarrollo, usamos rutas relativas (el proxy de Vite las maneja)
 // En producción, usamos la URL completa de la API
-export const API_BASE_URL = isDevelopment ? '' : (apiUrl || 'http://127.0.0.1:8000');
+if (!isDevelopment && !apiUrl) {
+  console.error('⚠️ VITE_API_URL no está configurada en producción. Por favor, configúrala en Render.');
+}
+export const API_BASE_URL = isDevelopment ? '' : (apiUrl || '');
 
 // Configuración de URLs
 export const config = {
