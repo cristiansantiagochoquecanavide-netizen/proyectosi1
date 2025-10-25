@@ -180,7 +180,8 @@ else:
         # Puertos alternativos cuando Vite se ejecuta en otro puerto
         'http://localhost:5174',
         'http://127.0.0.1:5174',
-        'https://proyectosi1-cs32.onrender.com'
+        'https://proyectosi1-cs32.onrender.com',
+        'https://consultoriodental.onrender.com'
     ]
 
 # CORS: configuración para permitir peticiones del frontend
@@ -195,6 +196,7 @@ else:
         'http://127.0.0.1:5173',
         'http://localhost:5174',
         'http://127.0.0.1:5174',
+        'https://consultoriodental.onrender.com'
     ]
 
 # Permitir cookies en peticiones CORS (necesario para sesiones)
