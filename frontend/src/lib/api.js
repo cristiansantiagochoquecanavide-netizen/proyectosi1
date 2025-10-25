@@ -1,6 +1,20 @@
 // Helpers de red para consumir el backend con sesiones y CSRF.
 // - Obtienen la cookie csrftoken con /csrf cuando es necesario.
 // - Envían credenciales para mantener la sesión de Django.
+// - En desarrollo: usa proxy de Vite (rutas relativas)
+// - En producción: usa URL completa de la API
+
+import { API_BASE_URL } from '../config'
+
+// Helper para construir URL completa (producción) o relativa (desarrollo)
+function buildUrl(path) {
+  // Si path ya es absoluta (comienza con http), devolverla tal cual
+  if (path.startsWith('http')) return path
+  // Si tenemos API_BASE_URL (producción), concatenarla
+  if (API_BASE_URL) return `${API_BASE_URL}${path}`
+  // Sino (desarrollo), usar ruta relativa
+  return path
+}
 
 function getCookie(name) {
   const value = `; ${document.cookie}`
@@ -26,7 +40,8 @@ function maybeAlertUnauthorized(status, text) {
 }
 
 export async function apiGet(path) {
-  const res = await fetch(path, {
+  const url = buildUrl(path)
+  const res = await fetch(url, {
     credentials: 'include',
   })
   if (!res.ok) {
@@ -41,7 +56,8 @@ export async function apiGet(path) {
 export async function apiPost(path, data) {
   await ensureCsrfCookie()
   const csrftoken = getCookie('csrftoken')
-  const res = await fetch(path, {
+  const url = buildUrl(path)
+  const res = await fetch(url, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -62,7 +78,8 @@ export async function apiPost(path, data) {
 export async function apiPostForm(path, formData) {
   await ensureCsrfCookie()
   const csrftoken = getCookie('csrftoken')
-  const res = await fetch(path, {
+  const url = buildUrl(path)
+  const res = await fetch(url, {
     method: 'POST',
     credentials: 'include',
     headers: { 'X-CSRFToken': csrftoken || '' },
@@ -80,7 +97,8 @@ export async function apiPostForm(path, formData) {
 export async function apiPut(path, data) {
   await ensureCsrfCookie()
   const csrftoken = getCookie('csrftoken')
-  const res = await fetch(path, {
+  const url = buildUrl(path)
+  const res = await fetch(url, {
     method: 'PUT',
     credentials: 'include',
     headers: {
@@ -101,7 +119,8 @@ export async function apiPut(path, data) {
 export async function apiPatch(path, data) {
   await ensureCsrfCookie()
   const csrftoken = getCookie('csrftoken')
-  const res = await fetch(path, {
+  const url = buildUrl(path)
+  const res = await fetch(url, {
     method: 'PATCH',
     credentials: 'include',
     headers: {
@@ -122,7 +141,8 @@ export async function apiPatch(path, data) {
 export async function apiDelete(path) {
   await ensureCsrfCookie()
   const csrftoken = getCookie('csrftoken')
-  const res = await fetch(path, {
+  const url = buildUrl(path)
+  const res = await fetch(url, {
     method: 'DELETE',
     credentials: 'include',
     headers: { 'X-CSRFToken': csrftoken || '' },

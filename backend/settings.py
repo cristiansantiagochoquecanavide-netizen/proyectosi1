@@ -57,10 +57,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Servir archivos estáticos en producción
+    'corsheaders.middleware.CorsMiddleware',  # CORS antes de CommonMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -146,7 +150,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # Directorio donde collectstatic recopilará archivos
+
+# Configuración de WhiteNoise para servir archivos estáticos eficientemente en producción
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media (archivos subidos por usuarios)
 # - MEDIA_URL y MEDIA_ROOT permiten servir archivos en desarrollo (por ejemplo, adjuntos clínicos).
@@ -173,3 +181,20 @@ else:
         'http://localhost:5174',
         'http://127.0.0.1:5174',
     ]
+
+# CORS: configuración para permitir peticiones del frontend
+# En producción, configurar CORS_ALLOWED_ORIGINS con la URL del frontend en Render
+_CORS_ORIGINS_ENV = os.getenv('CORS_ALLOWED_ORIGINS', '')
+if _CORS_ORIGINS_ENV:
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in _CORS_ORIGINS_ENV.split(',') if o.strip()]
+else:
+    # Valores por defecto para desarrollo local
+    CORS_ALLOWED_ORIGINS = [
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        'http://localhost:5174',
+        'http://127.0.0.1:5174',
+    ]
+
+# Permitir cookies en peticiones CORS (necesario para sesiones)
+CORS_ALLOW_CREDENTIALS = True
