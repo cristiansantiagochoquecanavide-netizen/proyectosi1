@@ -140,11 +140,11 @@ LANGUAGE_CODE = 'es'
 # Zona horaria y localización
 # - LANGUAGE_CODE en 'es' para interfaces/mensajes en español.
 # - TIME_ZONE puede ajustarse a la zona local según necesidad.
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'UTC-4'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
