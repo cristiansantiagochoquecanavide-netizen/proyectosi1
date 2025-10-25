@@ -26,7 +26,8 @@ function getCookie(name) {
 async function ensureCsrfCookie() {
   if (!getCookie('csrftoken')) {
     try {
-      await fetch('/csrf', { credentials: 'include' })
+      const url = buildUrl('/csrf')
+      await fetch(url, { credentials: 'include' })
     } catch (e) {
       // ignorar, reintentaremos en el POST
     }
