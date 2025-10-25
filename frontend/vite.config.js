@@ -45,15 +45,21 @@ export default defineConfig({
       },
     }
   },
-  build: {
+   build: {
     outDir: 'dist',
     sourcemap: false,
-    // Optimizaciones para producción
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          mui: ['@mui/material', '@mui/icons-material'],
+        manualChunks: (id) => {
+          // Separar vendor chunks (node_modules)
+          if (id.includes('node_modules')) {
+            // Chunk separado para MUI (es grande)
+            if (id.includes('@mui')) {
+              return 'vendor-mui';
+            }
+            // Chunk para el resto de vendors
+            return 'vendor';
+          }
         },
       },
     },
