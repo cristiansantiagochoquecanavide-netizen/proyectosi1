@@ -68,7 +68,7 @@ export default function Navbar({ user, onLogout }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // < 600px (solo celulares)
+  const isMobile = true; // Siempre mostrar menú hamburguesa en todos los dispositivos
 
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);
