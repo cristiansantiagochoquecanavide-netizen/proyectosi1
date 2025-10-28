@@ -28,11 +28,40 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
-  { text: 'Inicio', icon: <HomeIcon />, path: '/dashboard' },
-  { text: 'Pacientes', icon: <PeopleIcon />, path: '/pacientes' },
-  { text: 'Citas', icon: <CalendarTodayIcon />, path: '/citas' },
-  { text: 'Odontólogos', icon: <MedicalServicesIcon />, path: '/odontologos' },
-  { text: 'Seguridad', icon: <SecurityIcon />, path: '/seguridad' },
+  { text: 'Inicio', icon: <HomeIcon />, path: '/' },
+  { 
+    text: 'Pacientes', 
+    icon: <PeopleIcon />, 
+    submenu: [
+      { text: 'Listado', path: '/pacientes' },
+      { text: 'Historial', path: '/pacientes/historial' },
+      { text: 'Adjuntar documento', path: '/pacientes/adjuntar' },
+    ]
+  },
+  { 
+    text: 'Citas', 
+    icon: <CalendarTodayIcon />, 
+    submenu: [
+      { text: 'Listado', path: '/citas' },
+      { text: 'Solicitar cita', path: '/citas/solicitar' },
+      { text: 'Odontólogos', path: '/citas/odontologos' },
+    ]
+  },
+  { 
+    text: 'Seguridad', 
+    icon: <SecurityIcon />, 
+    submenu: [
+      { text: 'Panel', path: '/seguridad' },
+      { text: 'Gestionar Usuarios', path: '/seguridad/usuarios' },
+      { text: 'Gestionar Roles', path: '/seguridad/roles' },
+      { text: 'Recepcionistas', path: '/seguridad/recepcionistas' },
+      { text: 'Cambiar contraseña', path: '/seguridad/cambiar-contrasena' },
+      { text: 'Bitácora', path: '/seguridad/bitacora' },
+    ]
+  },
+  { text: 'Reportes', icon: <MedicalServicesIcon />, path: '/reportes' },
+  { text: 'Inventario', icon: <PersonIcon />, path: '/inventario' },
+  { text: 'Facturación', icon: <PersonIcon />, path: '/facturacion' },
 ];
 
 export default function Navbar({ user, onLogout }) {
@@ -104,14 +133,42 @@ export default function Navbar({ user, onLogout }) {
       {/* Menú de navegación */}
       <List>
         {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton onClick={() => handleNavigation(item.path)}>
-              <ListItemIcon sx={{ color: 'primary.main' }}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
+          <React.Fragment key={item.text}>
+            {item.submenu ? (
+              // Item con submenú
+              <>
+                <ListItem disablePadding>
+                  <ListItemButton>
+                    <ListItemIcon sx={{ color: 'primary.main' }}>
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText primary={item.text} />
+                  </ListItemButton>
+                </ListItem>
+                {/* Submenú indentado */}
+                {item.submenu.map((subItem) => (
+                  <ListItem key={subItem.path} disablePadding sx={{ pl: 4 }}>
+                    <ListItemButton onClick={() => handleNavigation(subItem.path)}>
+                      <ListItemText 
+                        primary={subItem.text} 
+                        primaryTypographyProps={{ variant: 'body2' }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </>
+            ) : (
+              // Item simple sin submenú
+              <ListItem disablePadding>
+                <ListItemButton onClick={() => handleNavigation(item.path)}>
+                  <ListItemIcon sx={{ color: 'primary.main' }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.text} />
+                </ListItemButton>
+              </ListItem>
+            )}
+          </React.Fragment>
         ))}
       </List>
 
