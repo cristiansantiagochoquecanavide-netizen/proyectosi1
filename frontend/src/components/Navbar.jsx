@@ -68,7 +68,7 @@ export default function Navbar({ user, onLogout }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md')); // < 960px
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // < 600px (solo celulares)
 
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);

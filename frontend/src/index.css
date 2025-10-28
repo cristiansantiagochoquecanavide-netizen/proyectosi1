@@ -348,8 +348,8 @@ img {a { color: var(--primary); }
   }
 }
 
-/* Estilos para el drawer en móvil/tablet */
-@media (max-width: 959px) {
+/* Estilos para el drawer solo en móvil (celulares) */
+@media (max-width: 599px) {
   .MuiDrawer-paper {
     width: 280px !important;
     max-width: 85vw !important;
