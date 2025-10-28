@@ -1,78 +1,349 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* Reset y configuración base */:root {
 
-  color-scheme: light dark;
+* {  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  margin: 0;  line-height: 1.5;
+
+  padding: 0;  font-weight: 400;
+
+  box-sizing: border-box;
+
+}  color-scheme: light dark;
+
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+html {  background-color: #242424;
+
+  font-size: 16px;
+
+  -webkit-text-size-adjust: 100%;  font-synthesis: none;
+
+}  text-rendering: optimizeLegibility;
+
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-:root {
-  --primary: #1E88E5; /* azul dental */
-  --secondary: #2E7D32; /* verde salud */
+
+html, body, #root {  -moz-osx-font-smoothing: grayscale;
+
+  height: 100%;}
+
+  width: 100%;:root {
+
+  overflow-x: hidden;  --primary: #1E88E5; /* azul dental */
+
+}  --secondary: #2E7D32; /* verde salud */
+
   --bg: #f7fbff;
-  --text: #203040;
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--text);
-  background-color: var(--bg);
+
+body {  --text: #203040;
+
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  -webkit-font-smoothing: antialiased;  line-height: 1.5;
+
+  -moz-osx-font-smoothing: grayscale;  font-weight: 400;
+
+  background-color: #f5f5f5;  color: var(--text);
+
+  position: relative;  background-color: var(--bg);
+
+}}
+
+
+
+#root > * {a {
+
+  max-width: 100vw;  font-weight: 500;
+
+  overflow-x: hidden;  color: #646cff;
+
+}  text-decoration: inherit;
+
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a { color: var(--primary); }
-a:hover { opacity: .9; }
+img {a { color: var(--primary); }
 
-body {
-  margin: 0;
+  max-width: 100%;a:hover { opacity: .9; }
+
+  height: auto;
+
+  display: block;body {
+
+}  margin: 0;
+
   display: block; /* Evitar centrado global que produce espacios raros */
-  min-width: 320px;
-  min-height: 100vh;
-}
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
+/* AJUSTES PARA MATERIAL-UI EN MÓVILES */  min-width: 320px;
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button { font-family: inherit; }
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
+@media (max-width: 599px) {  min-height: 100vh;
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+  .MuiContainer-root {}
+
+    padding-left: 12px !important;
+
+    padding-right: 12px !important;h1 {
+
+  }  font-size: 3.2em;
+
+    line-height: 1.1;
+
+  .MuiCard-root {}
+
+    margin: 8px 0 !important;
+
+  }button {
+
+    border-radius: 8px;
+
+  .MuiCardContent-root {  border: 1px solid transparent;
+
+    padding: 12px !important;  padding: 0.6em 1.2em;
+
+  }  font-size: 1em;
+
+    font-weight: 500;
+
+  .MuiCardContent-root:last-child {  font-family: inherit;
+
+    padding-bottom: 12px !important;  background-color: #1a1a1a;
+
+  }  cursor: pointer;
+
+    transition: border-color 0.25s;
+
+  .MuiButton-root {}
+
+    padding: 6px 12px !important;button { font-family: inherit; }
+
+    font-size: 0.813rem !important;button:hover {
+
+    min-width: auto !important;  border-color: #646cff;
+
+  }}
+
+  button:focus,
+
+  .MuiButton-startIcon,button:focus-visible {
+
+  .MuiButton-endIcon {  outline: 4px auto -webkit-focus-ring-color;
+
+    margin-left: 4px !important;}
+
+    margin-right: 4px !important;
+
+  }@media (prefers-color-scheme: light) {
+
+    :root {
+
+  .MuiTextField-root {    color: #213547;
+
+    margin-bottom: 12px !important;    background-color: #ffffff;
+
+  }  }
+
+    a:hover {
+
+  .MuiInputBase-root {    color: #747bff;
+
+    font-size: 0.875rem !important;  }
+
+  }  button {
+
+      background-color: #f9f9f9;
+
+  .MuiInputLabel-root {  }
+
+    font-size: 0.875rem !important;}
+
   }
-  a:hover {
-    color: #747bff;
+  
+  .MuiDialog-paper {
+    margin: 16px !important;
+    max-width: calc(100% - 32px) !important;
+    max-height: calc(100% - 32px) !important;
   }
-  button {
-    background-color: #f9f9f9;
+  
+  .MuiDialogTitle-root {
+    padding: 12px 16px !important;
+    font-size: 1.125rem !important;
+  }
+  
+  .MuiDialogContent-root {
+    padding: 12px 16px !important;
+  }
+  
+  .MuiDialogActions-root {
+    padding: 8px 16px 12px !important;
+  }
+  
+  .MuiTableContainer-root {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .MuiTable-root {
+    min-width: 600px;
+  }
+  
+  .MuiTableCell-root {
+    padding: 8px 4px !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .MuiTableCell-head {
+    font-size: 0.813rem !important;
+    font-weight: 600 !important;
+  }
+  
+  .MuiDrawer-paper {
+    width: 260px !important;
+    max-width: 80vw !important;
+  }
+  
+  .MuiToolbar-root {
+    min-height: 56px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  
+  .MuiTypography-h1 {
+    font-size: 1.75rem !important;
+  }
+  
+  .MuiTypography-h2 {
+    font-size: 1.5rem !important;
+  }
+  
+  .MuiTypography-h3 {
+    font-size: 1.25rem !important;
+  }
+  
+  .MuiTypography-h4 {
+    font-size: 1.125rem !important;
+  }
+  
+  .MuiTypography-h5 {
+    font-size: 1rem !important;
+  }
+  
+  .MuiTypography-h6 {
+    font-size: 0.938rem !important;
+  }
+  
+  .MuiTypography-body1 {
+    font-size: 0.875rem !important;
+  }
+  
+  .MuiTypography-body2 {
+    font-size: 0.813rem !important;
+  }
+  
+  .MuiGrid-container {
+    width: 100% !important;
+  }
+  
+  .MuiGrid-item {
+    padding: 6px !important;
+  }
+  
+  .MuiFormControl-root {
+    margin-bottom: 12px !important;
+  }
+  
+  .MuiChip-root {
+    height: 24px !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .MuiIconButton-root {
+    padding: 8px !important;
+  }
+  
+  .MuiListItem-root {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+  
+  .MuiListItemText-primary {
+    font-size: 0.875rem !important;
+  }
+  
+  .MuiListItemText-secondary {
+    font-size: 0.75rem !important;
+  }
+}
+
+/* TABLETS (600px - 959px) */
+@media (min-width: 600px) and (max-width: 959px) {
+  .MuiContainer-root {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  
+  .MuiCardContent-root {
+    padding: 16px !important;
+  }
+  
+  .MuiButton-root {
+    font-size: 0.875rem !important;
+  }
+  
+  .MuiTableCell-root {
+    padding: 12px 8px !important;
+    font-size: 0.813rem !important;
+  }
+}
+
+/* DESKTOP (960px+) */
+@media (min-width: 960px) {
+  .MuiContainer-root {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+}
+
+/* Utilidades para ocultar/mostrar según dispositivo */
+@media (max-width: 599px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 600px) {
+  .hide-desktop {
+    display: none !important;
+  }
+  
+  .show-mobile {
+    display: none !important;
+  }
+}
+
+/* Prevenir que inputs hagan zoom en iOS */
+@media screen and (max-width: 599px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevenir selección de texto accidental en móviles */
+@media (max-width: 599px) {
+  .MuiButton-root,
+  .MuiIconButton-root,
+  .MuiTab-root,
+  .MuiChip-root {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
 }
