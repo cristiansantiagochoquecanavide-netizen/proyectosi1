@@ -15,6 +15,7 @@ import {
   Divider,
   useMediaQuery,
   useTheme,
+  Collapse,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
@@ -25,6 +26,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import SecurityIcon from '@mui/icons-material/Security';
 import LogoutIcon from '@mui/icons-material/Logout';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
@@ -66,12 +69,20 @@ const menuItems = [
 
 export default function Navbar({ user, onLogout }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [openMenus, setOpenMenus] = useState({}); // Estado para controlar submenús abiertos
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = true; // Siempre mostrar menú hamburguesa en todos los dispositivos
 
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);
+  };
+
+  const handleMenuClick = (menuText) => {
+    setOpenMenus(prev => ({
+      ...prev,
+      [menuText]: !prev[menuText]
+    }));
   };
 
   const handleNavigation = (path) => {
@@ -135,27 +146,32 @@ export default function Navbar({ user, onLogout }) {
         {menuItems.map((item) => (
           <React.Fragment key={item.text}>
             {item.submenu ? (
-              // Item con submenú
+              // Item con submenú desplegable
               <>
                 <ListItem disablePadding>
-                  <ListItemButton>
+                  <ListItemButton onClick={() => handleMenuClick(item.text)}>
                     <ListItemIcon sx={{ color: 'primary.main' }}>
                       {item.icon}
                     </ListItemIcon>
                     <ListItemText primary={item.text} />
+                    {openMenus[item.text] ? <ExpandLess /> : <ExpandMore />}
                   </ListItemButton>
                 </ListItem>
-                {/* Submenú indentado */}
-                {item.submenu.map((subItem) => (
-                  <ListItem key={subItem.path} disablePadding sx={{ pl: 4 }}>
-                    <ListItemButton onClick={() => handleNavigation(subItem.path)}>
-                      <ListItemText 
-                        primary={subItem.text} 
-                        primaryTypographyProps={{ variant: 'body2' }}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
+                {/* Submenú colapsable */}
+                <Collapse in={openMenus[item.text]} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding>
+                    {item.submenu.map((subItem) => (
+                      <ListItem key={subItem.path} disablePadding sx={{ pl: 4 }}>
+                        <ListItemButton onClick={() => handleNavigation(subItem.path)}>
+                          <ListItemText 
+                            primary={subItem.text} 
+                            primaryTypographyProps={{ variant: 'body2' }}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Collapse>
               </>
             ) : (
               // Item simple sin submenú
