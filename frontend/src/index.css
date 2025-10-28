@@ -347,3 +347,44 @@ img {a { color: var(--primary); }
     user-select: none;
   }
 }
+
+/* Estilos para el drawer en móvil/tablet */
+@media (max-width: 959px) {
+  .MuiDrawer-paper {
+    width: 280px !important;
+    max-width: 85vw !important;
+  }
+  
+  /* Asegurar que el drawer esté sobre todo */
+  .MuiDrawer-root {
+    z-index: 1300 !important;
+  }
+  
+  /* Overlay del drawer más oscuro */
+  .MuiBackdrop-root {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+  }
+  
+  /* Mejorar el área de toque del botón hamburguesa */
+  .MuiAppBar-root .MuiIconButton-edge-start {
+    padding: 12px !important;
+  }
+}
+
+/* Espaciado después del AppBar fijo */
+.MuiToolbar-root + * {
+  margin-top: 8px;
+}
+
+/* Estilos para ListItemButton en el drawer */
+.MuiDrawer-paper .MuiListItemButton-root {
+  padding: 12px 16px !important;
+}
+
+.MuiDrawer-paper .MuiListItemButton-root:hover {
+  background-color: rgba(25, 118, 210, 0.08) !important;
+}
+
+.MuiDrawer-paper .MuiListItemIcon-root {
+  min-width: 40px !important;
+}
