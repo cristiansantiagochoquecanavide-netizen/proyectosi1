@@ -32,10 +32,17 @@ class OdontologoSerializer(serializers.ModelSerializer):
 class CitaSerializer(serializers.ModelSerializer):
     nombre_paciente = serializers.CharField(source='id_paciente.nombre', read_only=True)
     nombre_odontologo = serializers.CharField(source='id_odontologo.nombre', read_only=True)
-    
+    atencion = serializers.SerializerMethodField()
+
+    def get_atencion(self, obj):
+        # Devuelve True si la cita ya tiene atención asociada, False si no
+        return hasattr(obj, 'atencion')
+
     class Meta:
         model = Cita
         fields = '__all__'
+        # Agregar el campo atencion al output
+        extra_fields = ['atencion']
 
 class DisponibilidadSerializer(serializers.ModelSerializer):
     """Serializer para Disponibilidad (CU10: Configurar disponibilidad de odontólogo)"""
