@@ -1,3 +1,28 @@
+    def clean(self):
+        cleaned_data = super().clean()
+        fecha = cleaned_data.get('fecha')
+        odontologo = cleaned_data.get('id_odontologo')
+        if fecha and odontologo:
+            from datetime import timedelta
+            from .models import Cita
+            # Buscar citas del mismo odontólogo en la misma fecha/hora
+            citas_misma_hora = Cita.objects.filter(id_odontologo=odontologo, fecha=fecha)
+            if self.instance.pk:
+                citas_misma_hora = citas_misma_hora.exclude(pk=self.instance.pk)
+            if citas_misma_hora.exists():
+                # Si existe una cita exactamente en la misma hora, rechazar
+                raise forms.ValidationError('Ya existe una cita con este odontólogo en la misma fecha y hora.')
+            # Buscar si hay una cita del mismo odontólogo en la hora anterior
+            cita_anterior = Cita.objects.filter(
+                id_odontologo=odontologo,
+                fecha__lt=fecha,
+                fecha__gte=fecha - timedelta(hours=1)
+            )
+            if self.instance.pk:
+                cita_anterior = cita_anterior.exclude(pk=self.instance.pk)
+            if cita_anterior.exists():
+                raise forms.ValidationError('Debe dejar al menos 1 hora de diferencia entre citas del mismo odontólogo.')
+        return cleaned_data
 from django import forms  # Formularios
 from django.contrib.auth.models import User
 from .models import Cita, Odontologo  # Modelos Cita y Odontologo
