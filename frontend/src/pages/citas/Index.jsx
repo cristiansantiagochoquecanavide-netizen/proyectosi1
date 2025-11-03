@@ -92,7 +92,8 @@ export default function Citas() {
     } catch (e) {
       // Extraer mensaje de validación si viene del backend Django
       let msg = e.message
-      const match = msg.match(/El odontólogo ya tiene una cita en esa fecha y hora\.|El paciente ya tiene una cita en esa fecha y hora\./)
+      // Buscar mensaje de validación en el texto de error
+      const match = msg.match(/El odontólogo ya tiene una cita asignada en esa fecha y hora\./)
       if (match) {
         setError(match[0])
       } else if (msg.includes('ValidationError')) {
