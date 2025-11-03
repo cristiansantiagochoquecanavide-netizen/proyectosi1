@@ -66,9 +66,10 @@ export default function IniciarAtencion() {
     console.log('Cita seleccionada:', newValue);
     setCitaSeleccionada(newValue);
     if (newValue) {
+      // El campo primary key del modelo Cita es id_cita, no id
       setFormData((prev) => ({
         ...prev,
-        id_cita: newValue.id,
+        id_cita: newValue.id_cita,
       }));
       setError(''); // Limpiar error al seleccionar
     } else {
@@ -122,8 +123,9 @@ export default function IniciarAtencion() {
 
   const getCitaLabel = (cita) => {
     if (!cita) return '';
-    const fecha = new Date(cita.fecha).toLocaleDateString('es-BO');
-    const hora = cita.hora?.substring(0, 5) || '';
+    const fechaObj = new Date(cita.fecha);
+    const fecha = fechaObj.toLocaleDateString('es-BO');
+    const hora = fechaObj.toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' });
     return `${fecha} ${hora} - ${cita.nombre_paciente || 'Paciente'} con ${cita.nombre_odontologo || 'Odontólogo'}`;
   };
 
@@ -159,7 +161,7 @@ export default function IniciarAtencion() {
                   getOptionLabel={getCitaLabel}
                   loading={loadingCitas}
                   onChange={handleCitaChange}
-                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  isOptionEqualToValue={(option, value) => option.id_cita === value.id_cita}
                   renderInput={(params) => (
                     <TextField
                       {...params}
