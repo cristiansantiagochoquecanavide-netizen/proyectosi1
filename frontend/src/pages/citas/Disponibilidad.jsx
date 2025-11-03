@@ -97,11 +97,16 @@ export default function Disponibilidad() {
     try {
       const motivo = prompt('Motivo del bloqueo:');
       if (motivo) {
-        await bloquearDisponibilidad(id, { motivo_bloqueo: motivo });
+        // Asegurarse de enviar el id como número
+        await bloquearDisponibilidad(Number(id), { motivo_bloqueo: motivo });
         cargarDatos();
       }
     } catch (err) {
-      alert('Error al bloquear');
+      if (err && err.response && err.response.data) {
+        alert('Error al bloquear: ' + JSON.stringify(err.response.data));
+      } else {
+        alert('Error al bloquear: ' + (err.message || err));
+      }
     }
   };
 
