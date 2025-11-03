@@ -9,23 +9,35 @@ class CitaForm(forms.ModelForm):  # Form ligado a Cita
         fields = ['fecha', 'id_paciente', 'id_odontologo', 'estado']  # Campos editables en el form
 
     def clean(self):
+        from datetime import timedelta
         cleaned_data = super().clean()
         fecha = cleaned_data.get('fecha')
         odontologo = cleaned_data.get('id_odontologo')
         paciente = cleaned_data.get('id_paciente')
-        if fecha and odontologo and paciente:
-            # 1. El odontólogo no puede tener dos pacientes en la misma fecha y hora
-            conflicto_odontologo = Cita.objects.filter(id_odontologo=odontologo, fecha=fecha)
-            if self.instance.pk:
-                conflicto_odontologo = conflicto_odontologo.exclude(pk=self.instance.pk)
-            if conflicto_odontologo.exists():
-                raise forms.ValidationError('El odontólogo ya tiene una cita en esa fecha y hora.')
-            # 2. El paciente no puede tener dos citas con diferentes odontólogos en la misma fecha y hora
-            conflicto_paciente = Cita.objects.filter(id_paciente=paciente, fecha=fecha)
+        if fecha and paciente:
+            inicio = fecha - timedelta(hours=1)
+            fin = fecha + timedelta(hours=1)
+            # Conflicto por paciente: el mismo paciente no puede tener otra cita dentro de ±1 hora
+            conflicto_paciente = Cita.objects.filter(
+                id_paciente=paciente,
+                fecha__gte=inicio,
+                fecha__lt=fin,
+            ).exclude(estado='cancelada')
             if self.instance.pk:
                 conflicto_paciente = conflicto_paciente.exclude(pk=self.instance.pk)
             if conflicto_paciente.exists():
-                raise forms.ValidationError('El paciente ya tiene una cita en esa fecha y hora.')
+                raise forms.ValidationError('El paciente ya tiene una cita dentro de 1 hora de ese horario.')
+            # Conflicto por odontólogo (si se especifica): el odontólogo no puede tener otra cita dentro de ±1 hora
+            if odontologo:
+                conflicto_odontologo = Cita.objects.filter(
+                    id_odontologo=odontologo,
+                    fecha__gte=inicio,
+                    fecha__lt=fin,
+                ).exclude(estado='cancelada')
+                if self.instance.pk:
+                    conflicto_odontologo = conflicto_odontologo.exclude(pk=self.instance.pk)
+                if conflicto_odontologo.exists():
+                    raise forms.ValidationError('El odontólogo ya tiene una cita dentro de 1 hora de ese horario.')
         return cleaned_data
 class OdontologoForm(forms.ModelForm):
     username = forms.CharField(
