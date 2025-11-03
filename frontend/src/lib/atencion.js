@@ -1,6 +1,6 @@
 // Cancela una atención
 export async function cancelarAtencion(id) {
-  return apiPost(`/atencion/atenciones/${id}/cancelar/`);
+  return apiPost(`/atencion/atenciones/${id}/cancelar/`, {});
 }
 // API para módulo de Atención Clínica
 // CU11-CU15, CU19: Atenciones, Procedimientos, Odontogramas, Tratamientos
