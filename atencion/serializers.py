@@ -50,18 +50,20 @@ class AtencionSerializer(serializers.ModelSerializer):
         El frontend solo necesita enviar id_cita y observaciones_generales.
         """
         id_cita = validated_data.get('id_cita')
-        
+        # Verificar si ya existe atención para esta cita
+        if id_cita and hasattr(id_cita, 'atencion'):
+            raise serializers.ValidationError({
+                'id_cita': 'Ya existe una atención registrada para esta cita. Solo se permite una atención por cita.'
+            })
         # Si no se proporcionaron id_paciente e id_odontologo, extraerlos de la cita
         if 'id_paciente' not in validated_data and id_cita:
             validated_data['id_paciente'] = id_cita.id_paciente
-        
         if 'id_odontologo' not in validated_data and id_cita:
             if not id_cita.id_odontologo:
                 raise serializers.ValidationError({
                     'id_cita': 'La cita seleccionada no tiene un odontólogo asignado.'
                 })
             validated_data['id_odontologo'] = id_cita.id_odontologo
-        
         return super().create(validated_data)
 
 

@@ -43,9 +43,11 @@ export default function IniciarAtencion() {
       setLoadingCitas(true);
       // Obtener citas programadas que aún no tienen atención
       const response = await apiGet('/citas/api/citas/?estado=programada');
-      const citasData = response.results || response;
+      let citasData = response.results || response;
+      // Filtrar solo las que NO tienen atención asociada (asumiendo campo atencion)
+      citasData = citasData.filter(c => !c.atencion);
       setCitas(citasData);
-      console.log('Citas cargadas:', citasData.length, citasData);
+      console.log('Citas programadas sin atención:', citasData.length, citasData);
     } catch (err) {
       console.error('Error al cargar citas:', err);
       setError('Error al cargar las citas programadas. Verifique que el backend esté ejecutándose.');
