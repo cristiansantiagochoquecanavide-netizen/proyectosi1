@@ -214,8 +214,8 @@ export default function ListadoAtenciones() {
               >
                 <MenuItem value="">Todos</MenuItem>
                 {pacientes.map((p) => (
-                  <MenuItem key={p.id} value={p.id}>
-                    {p.nombre} {p.apellido_paterno}
+                  <MenuItem key={p.id_paciente} value={p.id_paciente}>
+                    {p.nombre}
                   </MenuItem>
                 ))}
               </Select>
