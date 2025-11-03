@@ -3,13 +3,16 @@
     if (!window.confirm('¿Está seguro de cancelar esta atención?')) return;
     try {
       await cancelarAtencion(atencion.id_atencion);
-      await cargarDatos();
+      // Actualizar solo el estado de la atención cancelada en la lista
+      setAtenciones((prev) => prev.map(a =>
+        a.id_atencion === atencion.id_atencion
+          ? { ...a, estado: 'cancelada' }
+          : a
+      ));
     } catch (err) {
-      let msg = 'Error al cancelar la atención';
       if (err && err.message) {
-        msg += `: ${err.message}`;
+        alert(err.message);
       }
-      alert(msg);
     }
   };
 import React, { useState, useEffect } from 'react';
