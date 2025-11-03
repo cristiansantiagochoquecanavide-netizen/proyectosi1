@@ -70,12 +70,26 @@ export default function Disponibilidad() {
   };
 
   const handleCrear = async () => {
+    // Validación básica
+    if (!nueva.id_odontologo || !nueva.fecha_inicio || !nueva.fecha_fin) {
+      alert('Debe completar todos los campos obligatorios.');
+      return;
+    }
     try {
-      await crearDisponibilidad(nueva);
+      // Asegurarse de enviar el id como número
+      const payload = {
+        ...nueva,
+        id_odontologo: Number(nueva.id_odontologo),
+      };
+      await crearDisponibilidad(payload);
       setOpenNueva(false);
       cargarDatos();
     } catch (err) {
-      alert('Error al crear disponibilidad');
+      if (err && err.response && err.response.data) {
+        alert('Error al crear disponibilidad: ' + JSON.stringify(err.response.data));
+      } else {
+        alert('Error al crear disponibilidad: ' + (err.message || err));
+      }
     }
   };
 
@@ -170,7 +184,7 @@ export default function Disponibilidad() {
               <Autocomplete
                 options={odontologos}
                 getOptionLabel={(o) => o.nombre}
-                onChange={(e, v) => setNueva({ ...nueva, id_odontologo: v?.id || '' })}
+                onChange={(e, v) => setNueva({ ...nueva, id_odontologo: v?.id_odontologo || '' })}
                 renderInput={(params) => <TextField {...params} label="Odontólogo *" />}
               />
             </Grid>
