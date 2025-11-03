@@ -50,11 +50,27 @@ class Cita(models.Model):
 
 
 # Clase para la disponibilidad de los odontólogos
+# CU10: Configurar disponibilidad de odontólogo
+# - Define slots de tiempo disponibles para agenda de citas
+# - Permite bloquear horarios específicos
 class Disponibilidad(models.Model):
-    id_odontologo = models.ForeignKey(Odontologo, on_delete=models.CASCADE)  # Relación con el odontólogo (FK)
-    fecha = models.DateTimeField()  # Fecha y hora de disponibilidad
-    estado = models.CharField(max_length=50, choices=[('disponible', 'Disponible'), 
-                                                     ('ocupado', 'Ocupado')])  # Estado de la disponibilidad
+    id_disponibilidad = models.AutoField(primary_key=True)
+    id_odontologo = models.ForeignKey(Odontologo, on_delete=models.CASCADE, related_name='disponibilidades')  # Relación con el odontólogo (FK)
+    fecha_inicio = models.DateTimeField(null=True, blank=True)  # Fecha y hora de inicio del slot
+    fecha_fin = models.DateTimeField(null=True, blank=True)  # Fecha y hora de fin del slot
+    estado = models.CharField(max_length=50, choices=[
+        ('disponible', 'Disponible'),
+        ('ocupado', 'Ocupado'),
+        ('bloqueado', 'Bloqueado')
+    ], default='disponible')  # Estado de la disponibilidad
+    motivo_bloqueo = models.CharField(max_length=255, blank=True, null=True)  # Razón del bloqueo (vacaciones, reunión, etc.)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    class Meta:
+        ordering = ['fecha_inicio']
+        verbose_name = 'Disponibilidad'
+        verbose_name_plural = 'Disponibilidades'
 
     def __str__(self):
-        return f"Disponibilidad de {self.id_odontologo.nombre} - {self.estado} en {self.fecha}"
+        return f"Disponibilidad de {self.id_odontologo.nombre} - {self.estado} ({self.fecha_inicio} - {self.fecha_fin})"

@@ -51,6 +51,10 @@ INSTALLED_APPS = [
     'seguridad_y_personal.apps.SeguridadYPersonalConfig',
     'pacientes',
     'citas',
+    'atencion',  # Nuevo: Paquete de Atención Clínica
+    'inventario_y_compras',  # Nuevo: Paquete de Inventario y Compras
+    'facturacion_y_compras',  # Nuevo: Paquete de Facturación y Pagos
+    'reportes',  # Paquete de Reportes
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

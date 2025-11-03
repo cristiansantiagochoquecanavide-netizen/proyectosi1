@@ -1,8 +1,29 @@
 from django.contrib import admin
-from .models import *
+from .models import (
+    Factura, DetalleFactura, Pago, Recibo
+)
 
-for model in models.__dict__.values():
-    if isinstance(model, type) and issubclass(model, admin.ModelAdmin):
-        continue
-    if isinstance(model, type) and hasattr(model, '_meta'):
-        admin.site.register(model)
+@admin.register(Factura)
+class FacturaAdmin(admin.ModelAdmin):
+    list_display = ('numero_factura', 'id_paciente', 'fecha_emision', 'estado', 'total', 'saldo_pendiente')
+    list_filter = ('estado', 'fecha_emision', 'metodo_pago')
+    search_fields = ('numero_factura', 'id_paciente__nombre')
+    date_hierarchy = 'fecha_emision'
+
+@admin.register(DetalleFactura)
+class DetalleFacturaAdmin(admin.ModelAdmin):
+    list_display = ('id_detalle', 'id_factura', 'concepto', 'cantidad', 'precio_unitario', 'subtotal')
+    search_fields = ('concepto',)
+
+@admin.register(Pago)
+class PagoAdmin(admin.ModelAdmin):
+    list_display = ('id_pago', 'id_factura', 'fecha_pago', 'monto', 'metodo_pago')
+    list_filter = ('metodo_pago', 'fecha_pago')
+    search_fields = ('id_factura__numero_factura', 'numero_referencia')
+    date_hierarchy = 'fecha_pago'
+
+@admin.register(Recibo)
+class ReciboAdmin(admin.ModelAdmin):
+    list_display = ('numero_recibo', 'id_paciente', 'fecha_emision')
+    search_fields = ('numero_recibo', 'id_paciente__nombre')
+    date_hierarchy = 'fecha_emision'
