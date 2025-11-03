@@ -135,7 +135,7 @@ export default function ListadoAtenciones() {
 
     setFinalizando(true);
     try {
-  await finalizarAtencion(atencionSeleccionada.id_atencion);
+      await finalizarAtencion(atencionSeleccionada.id_atencion);
       setOpenFinalizar(false);
       setAtencionSeleccionada(null);
       cargarDatos(); // Recargar la lista
@@ -144,6 +144,22 @@ export default function ListadoAtenciones() {
       alert('Error al finalizar la atención');
     } finally {
       setFinalizando(false);
+    }
+  };
+
+  const handleCancelar = async (atencion) => {
+    if (!window.confirm('¿Está seguro de cancelar esta atención?')) return;
+    try {
+      await cancelarAtencion(atencion.id_atencion);
+      setAtenciones((prev) => prev.map(a =>
+        a.id_atencion === atencion.id_atencion
+          ? { ...a, estado: 'cancelada' }
+          : a
+      ));
+    } catch (err) {
+      if (err && err.message) {
+        alert(err.message);
+      }
     }
   };
 
