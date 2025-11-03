@@ -3,7 +3,7 @@ from .models import (
     Atencion, Procedimiento, Odontograma, PiezaDental,
     Tratamiento, TratamientoAtencion
 )
-from citas.models import Cita, Odontologo
+from citas.models import Odontologo
 from pacientes.models import Paciente
 
 
@@ -24,6 +24,16 @@ class AtencionSerializer(serializers.ModelSerializer):
     paciente_nombre = serializers.CharField(source='id_paciente.nombre', read_only=True)
     odontologo_nombre = serializers.CharField(source='id_odontologo.nombre', read_only=True)
     
+    # Hacer estos campos opcionales en el input, se extraerán de la cita
+    id_paciente = serializers.PrimaryKeyRelatedField(
+        queryset=Paciente.objects.all(),
+        required=False
+    )
+    id_odontologo = serializers.PrimaryKeyRelatedField(
+        queryset=Odontologo.objects.all(),
+        required=False
+    )
+    
     class Meta:
         model = Atencion
         fields = [
@@ -33,6 +43,26 @@ class AtencionSerializer(serializers.ModelSerializer):
             'paciente_nombre', 'odontologo_nombre'
         ]
         read_only_fields = ['id_atencion', 'created_at', 'updated_at']
+    
+    def create(self, validated_data):
+        """
+        Al crear una atención, extrae automáticamente el paciente y odontólogo de la cita.
+        El frontend solo necesita enviar id_cita y observaciones_generales.
+        """
+        id_cita = validated_data.get('id_cita')
+        
+        # Si no se proporcionaron id_paciente e id_odontologo, extraerlos de la cita
+        if 'id_paciente' not in validated_data and id_cita:
+            validated_data['id_paciente'] = id_cita.id_paciente
+        
+        if 'id_odontologo' not in validated_data and id_cita:
+            if not id_cita.id_odontologo:
+                raise serializers.ValidationError({
+                    'id_cita': 'La cita seleccionada no tiene un odontólogo asignado.'
+                })
+            validated_data['id_odontologo'] = id_cita.id_odontologo
+        
+        return super().create(validated_data)
 
 
 class PiezaDentalSerializer(serializers.ModelSerializer):

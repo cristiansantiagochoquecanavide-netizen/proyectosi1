@@ -101,10 +101,13 @@ export default function IniciarAtencion() {
     setLoading(true);
 
     try {
+      // Preparar datos para el backend
+      // El motivo de consulta va en observaciones_generales
+      const observacionesCompletas = `Motivo de consulta: ${formData.motivo_consulta}\n${formData.observaciones ? '\nObservaciones: ' + formData.observaciones : ''}`;
+      
       const response = await crearAtencion({
         id_cita: formData.id_cita,
-        motivo_consulta: formData.motivo_consulta,
-        observaciones: formData.observaciones,
+        observaciones_generales: observacionesCompletas.trim(),
       });
 
       setSuccess('Atención iniciada correctamente');
