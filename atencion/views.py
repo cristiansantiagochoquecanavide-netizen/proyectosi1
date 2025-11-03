@@ -30,6 +30,19 @@ class AtencionViewSet(viewsets.ModelViewSet):
             'message': 'Atención finalizada correctamente',
             'fecha_fin': atencion.fecha_fin
         })
+
+    @action(detail=True, methods=['post'])
+    def cancelar(self, request, pk=None):
+        """Cancela una atención (nuevo endpoint)"""
+        atencion = self.get_object()
+        atencion.estado = 'cancelada'
+        atencion.fecha_fin = timezone.now()
+        atencion.save()
+        return Response({
+            'status': 'success',
+            'message': 'Atención cancelada correctamente',
+            'fecha_fin': atencion.fecha_fin
+        })
     
     @action(detail=False, methods=['get'])
     def en_curso(self, request):

@@ -1,3 +1,12 @@
+  const handleCancelar = async (atencion) => {
+    if (!window.confirm('¿Está seguro de cancelar esta atención?')) return;
+    try {
+      await cancelarAtencion(atencion.id_atencion);
+      cargarDatos();
+    } catch (err) {
+      alert('Error al cancelar la atención');
+    }
+  };
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -30,7 +39,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { useNavigate } from 'react-router-dom';
-import { listarAtenciones, finalizarAtencion, listarAtencionesPorPaciente } from '../../lib/atencion';
+import { listarAtenciones, finalizarAtencion, cancelarAtencion, listarAtencionesPorPaciente } from '../../lib/atencion';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { apiGet } from '../../lib/api';
 
 export default function ListadoAtenciones() {
@@ -250,12 +260,12 @@ export default function ListadoAtenciones() {
                 </TableRow>
               ) : (
                 atenciones.map((atencion) => (
-                  <TableRow key={atencion.id} hover>
-                    <TableCell>{atencion.id}</TableCell>
-                    <TableCell>{formatearFecha(atencion.fecha_atencion)}</TableCell>
-                    <TableCell>{atencion.nombre_paciente || '-'}</TableCell>
-                    <TableCell>{atencion.nombre_odontologo || '-'}</TableCell>
-                    <TableCell>{atencion.motivo_consulta?.substring(0, 30)}...</TableCell>
+                  <TableRow key={atencion.id_atencion} hover>
+                    <TableCell>{atencion.id_atencion}</TableCell>
+                    <TableCell>{formatearFecha(atencion.fecha_inicio)}</TableCell>
+                    <TableCell>{atencion.paciente_nombre || '-'}</TableCell>
+                    <TableCell>{atencion.odontologo_nombre || '-'}</TableCell>
+                    <TableCell>{atencion.observaciones_generales?.substring(0, 30)}...</TableCell>
                     <TableCell>
                       <Chip
                         label={getEstadoLabel(atencion.estado)}
@@ -273,14 +283,24 @@ export default function ListadoAtenciones() {
                         <VisibilityIcon />
                       </IconButton>
                       {atencion.estado === 'en_curso' && (
-                        <IconButton
-                          color="success"
-                          size="small"
-                          onClick={() => handleAbrirFinalizar(atencion)}
-                          title="Finalizar atención"
-                        >
-                          <CheckCircleIcon />
-                        </IconButton>
+                        <>
+                          <IconButton
+                            color="success"
+                            size="small"
+                            onClick={() => handleAbrirFinalizar(atencion)}
+                            title="Finalizar atención"
+                          >
+                            <CheckCircleIcon />
+                          </IconButton>
+                          <IconButton
+                            color="error"
+                            size="small"
+                            onClick={() => handleCancelar(atencion)}
+                            title="Cancelar atención"
+                          >
+                            <CancelIcon />
+                          </IconButton>
+                        </>
                       )}
                     </TableCell>
                   </TableRow>
@@ -293,18 +313,18 @@ export default function ListadoAtenciones() {
 
       {/* Modal de Detalle */}
       <Dialog open={openDetalle} onClose={() => setOpenDetalle(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Detalle de Atención #{atencionSeleccionada?.id}</DialogTitle>
+  <DialogTitle>Detalle de Atención #{atencionSeleccionada?.id_atencion}</DialogTitle>
         <DialogContent>
           {atencionSeleccionada && (
             <Box sx={{ mt: 2 }}>
               <Typography variant="body2" gutterBottom>
-                <strong>Fecha:</strong> {formatearFecha(atencionSeleccionada.fecha_atencion)}
+                <strong>Fecha:</strong> {formatearFecha(atencionSeleccionada.fecha_inicio)}
               </Typography>
               <Typography variant="body2" gutterBottom>
-                <strong>Paciente:</strong> {atencionSeleccionada.nombre_paciente}
+                <strong>Paciente:</strong> {atencionSeleccionada.paciente_nombre}
               </Typography>
               <Typography variant="body2" gutterBottom>
-                <strong>Odontólogo:</strong> {atencionSeleccionada.nombre_odontologo}
+                <strong>Odontólogo:</strong> {atencionSeleccionada.odontologo_nombre}
               </Typography>
               <Typography variant="body2" gutterBottom>
                 <strong>Estado:</strong>{' '}
@@ -318,7 +338,7 @@ export default function ListadoAtenciones() {
                 <strong>Motivo de Consulta:</strong>
               </Typography>
               <Typography variant="body2" sx={{ pl: 2 }}>
-                {atencionSeleccionada.motivo_consulta}
+                {atencionSeleccionada.observaciones_generales}
               </Typography>
               <Typography variant="body2" gutterBottom sx={{ mt: 2 }}>
                 <strong>Diagnóstico:</strong>
