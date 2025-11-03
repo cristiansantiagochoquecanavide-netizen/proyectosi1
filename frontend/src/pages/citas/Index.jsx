@@ -90,7 +90,21 @@ export default function Citas() {
       setForm({ fecha: '', id_paciente: '', id_odontologo: '', estado: 'pendiente' })
       setError('')
     } catch (e) {
-      setError(e.message)
+      // Extraer mensaje de validación si viene del backend Django
+      let msg = e.message
+      const match = msg.match(/El odontólogo ya tiene una cita en esa fecha y hora\.|El paciente ya tiene una cita en esa fecha y hora\./)
+      if (match) {
+        setError(match[0])
+      } else if (msg.includes('ValidationError')) {
+        try {
+          const json = JSON.parse(msg.split('ValidationError:')[1])
+          setError(json[0] || 'Error de validación')
+        } catch {
+          setError('Error de validación')
+        }
+      } else {
+        setError('Error: ' + msg)
+      }
     } finally {
       setSaving(false)
     }
