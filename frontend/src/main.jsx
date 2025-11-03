@@ -20,6 +20,22 @@ import HistorialPaciente from './pages/pacientes/Historial.jsx'
 import AdjuntarArchivo from './pages/pacientes/Adjuntar.jsx'
 import SolicitarCita from './pages/citas/Solicitar.jsx'
 import Odontologos from './pages/citas/Odontologos.jsx'
+// Nuevos módulos - Atención Clínica
+import IniciarAtencion from './pages/atencion/IniciarAtencion.jsx'
+import ListadoAtenciones from './pages/atencion/ListadoAtenciones.jsx'
+import Odontograma from './pages/atencion/Odontograma.jsx'
+import Tratamientos from './pages/atencion/Tratamientos.jsx'
+// Nuevos módulos - Inventario
+import NuevoInsumo from './pages/inventario/NuevoInsumo.jsx'
+import AlertasStock from './pages/inventario/AlertasStock.jsx'
+import Movimientos from './pages/inventario/Movimientos.jsx'
+import OrdenesCompra from './pages/inventario/OrdenesCompra.jsx'
+// Nuevos módulos - Facturación
+import GenerarFactura from './pages/facturacion/GenerarFactura.jsx'
+import RegistrarPago from './pages/facturacion/RegistrarPago.jsx'
+import Recibos from './pages/facturacion/Recibos.jsx'
+// Nuevos módulos - Disponibilidad
+import Disponibilidad from './pages/citas/Disponibilidad.jsx'
 import { AuthProvider } from './ui/AuthContext.jsx'
 import RequireAuth from './ui/RequireAuth.jsx'
 
@@ -38,6 +54,12 @@ const router = createBrowserRouter([
       { path: 'citas', element: <RequireAuth><Citas /></RequireAuth> },
       { path: 'citas/solicitar', element: <RequireAuth><SolicitarCita /></RequireAuth> },
       { path: 'citas/odontologos', element: <RequireAuth><Odontologos /></RequireAuth> },
+      { path: 'citas/disponibilidad', element: <RequireAuth><Disponibilidad /></RequireAuth> },
+      // Rutas de Atención Clínica
+      { path: 'atencion/iniciar', element: <RequireAuth><IniciarAtencion /></RequireAuth> },
+      { path: 'atencion', element: <RequireAuth><ListadoAtenciones /></RequireAuth> },
+      { path: 'atencion/odontograma', element: <RequireAuth><Odontograma /></RequireAuth> },
+      { path: 'atencion/tratamientos', element: <RequireAuth><Tratamientos /></RequireAuth> },
       { path: 'seguridad', element: <RequireAuth><Seguridad /></RequireAuth> },
   { path: 'seguridad/usuarios', element: <RequireAuth><Usuarios /></RequireAuth> },
   { path: 'seguridad/roles', element: <RequireAuth><Roles /></RequireAuth> },
@@ -47,8 +69,17 @@ const router = createBrowserRouter([
       // públicas
       { path: 'seguridad/login', element: <Login /> },
       { path: 'reportes', element: <RequireAuth><Reportes /></RequireAuth> },
+      // Rutas de Inventario
       { path: 'inventario', element: <RequireAuth><Inventario /></RequireAuth> },
+      { path: 'inventario/nuevo', element: <RequireAuth><NuevoInsumo /></RequireAuth> },
+      { path: 'inventario/alertas', element: <RequireAuth><AlertasStock /></RequireAuth> },
+      { path: 'inventario/movimientos', element: <RequireAuth><Movimientos /></RequireAuth> },
+      { path: 'inventario/ordenes', element: <RequireAuth><OrdenesCompra /></RequireAuth> },
+      // Rutas de Facturación
       { path: 'facturacion', element: <RequireAuth><Facturacion /></RequireAuth> },
+      { path: 'facturacion/nueva', element: <RequireAuth><GenerarFactura /></RequireAuth> },
+      { path: 'facturacion/pago', element: <RequireAuth><RegistrarPago /></RequireAuth> },
+      { path: 'facturacion/recibos', element: <RequireAuth><Recibos /></RequireAuth> },
     ]
   }
 ])
