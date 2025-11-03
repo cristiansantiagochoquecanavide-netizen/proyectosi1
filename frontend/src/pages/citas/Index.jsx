@@ -44,7 +44,7 @@ export default function Citas() {
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
   }
 
-  const openCrear = () => { setEditing(false); setEditId(null); setForm({ fecha: '', id_paciente: '', id_odontologo: '', estado: 'pendiente' }); setOpen(true) }
+  const openCrear = () => { setEditing(false); setEditId(null); setForm({ fecha: '', id_paciente: '', id_odontologo: '', estado: 'pendiente' }); setError(''); setOpen(true) }
   const openEditar = (row) => {
     setEditing(true)
     setEditId(row.id_cita)
@@ -54,9 +54,10 @@ export default function Citas() {
       id_odontologo: row.id_odontologo || '',
       estado: row.estado || 'pendiente'
     })
+    setError('')
     setOpen(true)
   }
-  const closeDialog = () => { if (!saving) setOpen(false) }
+  const closeDialog = () => { if (!saving) { setOpen(false); setError(''); } }
   const onChange = (e) => {
     const { name, value } = e.target
     setForm(prev => ({ ...prev, [name]: value }))
@@ -127,8 +128,7 @@ export default function Citas() {
         <Button variant="contained" onClick={openCrear}>Crear cita</Button>
       </Stack>
       {loading && <CircularProgress />}
-      {error && <Alert severity="error">{error}</Alert>}
-      {!loading && !error && (
+      {!loading && (
         <TableContainer>
           <Table size="small">
             <TableHead>
@@ -172,6 +172,7 @@ export default function Citas() {
       <Dialog open={open} onClose={closeDialog} fullWidth maxWidth="sm">
         <DialogTitle>{editing ? 'Editar cita' : 'Crear cita'}</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
           <Stack spacing={2} sx={{ mt: 1 }}>
             <TextField label="Fecha y hora" name="fecha" type="datetime-local" value={form.fecha} onChange={onChange} fullWidth required InputLabelProps={{ shrink: true }} />
             <TextField label="Paciente" name="id_paciente" select value={form.id_paciente} onChange={onChange} fullWidth required>
