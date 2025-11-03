@@ -30,6 +30,9 @@ class OdontologoSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 class CitaSerializer(serializers.ModelSerializer):
+    nombre_paciente = serializers.CharField(source='id_paciente.nombre', read_only=True)
+    nombre_odontologo = serializers.CharField(source='id_odontologo.nombre', read_only=True)
+    
     class Meta:
         model = Cita
         fields = '__all__'

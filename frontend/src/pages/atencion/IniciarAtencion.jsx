@@ -27,6 +27,7 @@ export default function IniciarAtencion() {
   const [citas, setCitas] = useState([]);
   const [loadingCitas, setLoadingCitas] = useState(true);
 
+  const [citaSeleccionada, setCitaSeleccionada] = useState(null);
   const [formData, setFormData] = useState({
     id_cita: '',
     motivo_consulta: '',
@@ -42,7 +43,9 @@ export default function IniciarAtencion() {
       setLoadingCitas(true);
       // Obtener citas programadas que aún no tienen atención
       const response = await apiGet('/citas/api/citas/?estado=programada');
-      setCitas(response.results || response);
+      const citasData = response.results || response;
+      setCitas(citasData);
+      console.log('Citas cargadas:', citasData.length, citasData);
     } catch (err) {
       console.error('Error al cargar citas:', err);
       setError('Error al cargar las citas programadas. Verifique que el backend esté ejecutándose.');
@@ -60,11 +63,14 @@ export default function IniciarAtencion() {
   };
 
   const handleCitaChange = (event, newValue) => {
+    console.log('Cita seleccionada:', newValue);
+    setCitaSeleccionada(newValue);
     if (newValue) {
       setFormData((prev) => ({
         ...prev,
         id_cita: newValue.id,
       }));
+      setError(''); // Limpiar error al seleccionar
     } else {
       setFormData((prev) => ({
         ...prev,
@@ -79,6 +85,9 @@ export default function IniciarAtencion() {
     setSuccess('');
 
     // Validaciones
+    console.log('Datos del formulario al enviar:', formData);
+    console.log('Cita seleccionada al enviar:', citaSeleccionada);
+    
     if (!formData.id_cita) {
       setError('Debe seleccionar una cita');
       return;
@@ -146,14 +155,18 @@ export default function IniciarAtencion() {
               <Grid item xs={12}>
                 <Autocomplete
                   options={citas}
+                  value={citaSeleccionada}
                   getOptionLabel={getCitaLabel}
                   loading={loadingCitas}
                   onChange={handleCitaChange}
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
                   renderInput={(params) => (
                     <TextField
                       {...params}
                       label="Cita Programada *"
                       placeholder="Buscar por fecha, paciente u odontólogo"
+                      error={error === 'Debe seleccionar una cita'}
+                      helperText={error === 'Debe seleccionar una cita' ? error : ''}
                       InputProps={{
                         ...params.InputProps,
                         endAdornment: (
@@ -167,6 +180,11 @@ export default function IniciarAtencion() {
                   )}
                   noOptionsText="No hay citas programadas disponibles"
                 />
+                {citas.length === 0 && !loadingCitas && (
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                    No hay citas programadas. Debe crear una cita primero desde el módulo de Citas.
+                  </Typography>
+                )}
               </Grid>
 
               {/* Motivo de Consulta */}
