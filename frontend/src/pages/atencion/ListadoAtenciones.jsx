@@ -4,7 +4,11 @@
       await cancelarAtencion(atencion.id_atencion);
       cargarDatos();
     } catch (err) {
-      alert('Error al cancelar la atención');
+      let msg = 'Error al cancelar la atención';
+      if (err && err.message) {
+        msg += `: ${err.message}`;
+      }
+      alert(msg);
     }
   };
 import React, { useState, useEffect } from 'react';
