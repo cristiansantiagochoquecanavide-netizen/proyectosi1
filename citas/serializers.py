@@ -38,6 +38,28 @@ class CitaSerializer(serializers.ModelSerializer):
         # Devuelve True si la cita ya tiene atención asociada, False si no
         return hasattr(obj, 'atencion')
 
+    def validate(self, data):
+        """Validar que el odontólogo no tenga dos pacientes en la misma fecha y hora"""
+        fecha = data.get('fecha')
+        odontologo = data.get('id_odontologo')
+        
+        if fecha and odontologo:
+            # Verificar si ya existe una cita con ese odontólogo en esa fecha y hora
+            conflicto = Cita.objects.filter(
+                id_odontologo=odontologo,
+                fecha=fecha
+            )
+            # Si estamos actualizando, excluir la cita actual
+            if self.instance:
+                conflicto = conflicto.exclude(pk=self.instance.pk)
+            
+            if conflicto.exists():
+                raise serializers.ValidationError(
+                    'El odontólogo ya tiene una cita asignada en esa fecha y hora.'
+                )
+        
+        return data
+
     class Meta:
         model = Cita
         fields = '__all__'
