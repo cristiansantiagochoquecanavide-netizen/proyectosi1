@@ -149,7 +149,7 @@ export default function Disponibilidad() {
               {disponibilidades.map((disp) => {
                 const estadoConfig = ESTADOS[disp.estado] || ESTADOS.disponible;
                 return (
-                  <TableRow key={disp.id} hover>
+                  <TableRow key={disp.id_disponibilidad} hover>
                     <TableCell>{disp.odontologo_nombre}</TableCell>
                     <TableCell>
                       {new Date(disp.fecha_inicio).toLocaleString('es-BO')}
@@ -163,12 +163,12 @@ export default function Disponibilidad() {
                     <TableCell>{disp.motivo_bloqueo || '-'}</TableCell>
                     <TableCell align="center">
                       {disp.estado === 'disponible' && (
-                        <Button size="small" color="error" onClick={() => handleBloquear(disp.id)}>
+                        <Button size="small" color="error" onClick={() => handleBloquear(disp.id_disponibilidad)}>
                           Bloquear
                         </Button>
                       )}
                       {disp.estado === 'bloqueado' && (
-                        <Button size="small" color="success" onClick={() => handleDesbloquear(disp.id)}>
+                        <Button size="small" color="success" onClick={() => handleDesbloquear(disp.id_disponibilidad)}>
                           Desbloquear
                         </Button>
                       )}
