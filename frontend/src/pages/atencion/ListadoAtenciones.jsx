@@ -144,7 +144,7 @@ export default function ListadoAtenciones() {
 
     setFinalizando(true);
     try {
-      await finalizarAtencion(atencionSeleccionada.id);
+  await finalizarAtencion(atencionSeleccionada.id_atencion);
       setOpenFinalizar(false);
       setAtencionSeleccionada(null);
       cargarDatos(); // Recargar la lista
