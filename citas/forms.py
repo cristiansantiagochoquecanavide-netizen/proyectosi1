@@ -13,8 +13,8 @@ class CitaForm(forms.ModelForm):  # Form ligado a Cita
         fecha = cleaned_data.get('fecha')
         odontologo = cleaned_data.get('id_odontologo')
         paciente = cleaned_data.get('id_paciente')
-        if fecha and paciente and odontologo:
-            # 1. El odontólogo no puede tener dos pacientes en la misma fecha y hora
+        if fecha and odontologo:
+            # El odontólogo no puede tener dos pacientes en la misma fecha y hora
             conflicto_odontologo = Cita.objects.filter(
                 id_odontologo=odontologo,
                 fecha=fecha
@@ -22,16 +22,7 @@ class CitaForm(forms.ModelForm):  # Form ligado a Cita
             if self.instance.pk:
                 conflicto_odontologo = conflicto_odontologo.exclude(pk=self.instance.pk)
             if conflicto_odontologo.exists():
-                raise forms.ValidationError('El odontólogo ya tiene una cita en esa fecha y hora.')
-            # 2. El paciente no puede tener dos citas con diferentes odontólogos en la misma fecha y hora
-            conflicto_paciente = Cita.objects.filter(
-                id_paciente=paciente,
-                fecha=fecha
-            )
-            if self.instance.pk:
-                conflicto_paciente = conflicto_paciente.exclude(pk=self.instance.pk)
-            if conflicto_paciente.exists():
-                raise forms.ValidationError('El paciente ya tiene una cita en esa fecha y hora.')
+                raise forms.ValidationError('El odontólogo ya tiene una cita asignada en esa fecha y hora.')
         return cleaned_data
 class OdontologoForm(forms.ModelForm):
     username = forms.CharField(
