@@ -1,20 +1,3 @@
-
-  const handleCancelar = async (atencion) => {
-    if (!window.confirm('¿Está seguro de cancelar esta atención?')) return;
-    try {
-      await cancelarAtencion(atencion.id_atencion);
-      // Actualizar solo el estado de la atención cancelada en la lista
-      setAtenciones((prev) => prev.map(a =>
-        a.id_atencion === atencion.id_atencion
-          ? { ...a, estado: 'cancelada' }
-          : a
-      ));
-    } catch (err) {
-      if (err && err.message) {
-        alert(err.message);
-      }
-    }
-  };
 import React, { useState, useEffect } from 'react';
 import {
   Box,
