@@ -28,6 +28,9 @@ import SecurityIcon from '@mui/icons-material/Security';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
@@ -48,6 +51,38 @@ const menuItems = [
       { text: 'Listado', path: '/citas' },
       { text: 'Solicitar cita', path: '/citas/solicitar' },
       { text: 'Odontólogos', path: '/citas/odontologos' },
+      { text: 'Disponibilidad', path: '/citas/disponibilidad' },
+    ]
+  },
+  { 
+    text: 'Atención', 
+    icon: <MedicalServicesIcon />, 
+    submenu: [
+      { text: 'Iniciar Atención', path: '/atencion/iniciar' },
+      { text: 'Listado Atenciones', path: '/atencion' },
+      { text: 'Odontograma', path: '/atencion/odontograma' },
+      { text: 'Tratamientos', path: '/atencion/tratamientos' },
+    ]
+  },
+  { 
+    text: 'Inventario', 
+    icon: <InventoryIcon />, 
+    submenu: [
+      { text: 'Listado Insumos', path: '/inventario' },
+      { text: 'Nuevo Insumo', path: '/inventario/nuevo' },
+      { text: 'Alertas Stock', path: '/inventario/alertas' },
+      { text: 'Movimientos', path: '/inventario/movimientos' },
+      { text: 'Órdenes de Compra', path: '/inventario/ordenes' },
+    ]
+  },
+  { 
+    text: 'Facturación', 
+    icon: <ReceiptIcon />, 
+    submenu: [
+      { text: 'Listado Facturas', path: '/facturacion' },
+      { text: 'Generar Factura', path: '/facturacion/nueva' },
+      { text: 'Registrar Pago', path: '/facturacion/pago' },
+      { text: 'Recibos', path: '/facturacion/recibos' },
     ]
   },
   { 
@@ -62,9 +97,7 @@ const menuItems = [
       { text: 'Bitácora', path: '/seguridad/bitacora' },
     ]
   },
-  { text: 'Reportes', icon: <MedicalServicesIcon />, path: '/reportes' },
-  { text: 'Inventario', icon: <PersonIcon />, path: '/inventario' },
-  { text: 'Facturación', icon: <PersonIcon />, path: '/facturacion' },
+  { text: 'Reportes', icon: <AssessmentIcon />, path: '/reportes' },
 ];
 
 export default function Navbar({ user, onLogout }) {
