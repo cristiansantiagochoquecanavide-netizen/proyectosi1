@@ -295,7 +295,65 @@ class CitaViewSet(viewsets.ModelViewSet):
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class DisponibilidadViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para Disponibilidad (CU10: Configurar disponibilidad de odontólogo)
+    """
     queryset = Disponibilidad.objects.all()
     serializer_class = DisponibilidadSerializer
     permission_classes = [RolesPermission]
     # No mapeamos explícito: por defecto permitido. Si se requiere, puede agregarse roles_per_action.
+    
+    @action(detail=False, methods=['get'])
+    def por_odontologo(self, request):
+        """Lista disponibilidades de un odontólogo específico"""
+        odontologo_id = request.query_params.get('odontologo_id')
+        if not odontologo_id:
+            return Response({'error': 'Se requiere odontologo_id'}, status=400)
+        
+        disponibilidades = self.queryset.filter(id_odontologo=odontologo_id)
+        serializer = self.get_serializer(disponibilidades, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def disponibles(self, request):
+        """Lista slots disponibles (no ocupados ni bloqueados)"""
+        desde = request.query_params.get('desde')  # Fecha desde
+        hasta = request.query_params.get('hasta')  # Fecha hasta
+        odontologo_id = request.query_params.get('odontologo_id')
+        
+        queryset = self.queryset.filter(estado='disponible')
+        
+        if desde:
+            queryset = queryset.filter(fecha_inicio__gte=desde)
+        if hasta:
+            queryset = queryset.filter(fecha_fin__lte=hasta)
+        if odontologo_id:
+            queryset = queryset.filter(id_odontologo=odontologo_id)
+        
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'])
+    def bloquear(self, request, pk=None):
+        """Bloquea un slot de disponibilidad"""
+        disponibilidad = self.get_object()
+        motivo = request.data.get('motivo_bloqueo', 'Sin especificar')
+        
+        disponibilidad.estado = 'bloqueado'
+        disponibilidad.motivo_bloqueo = motivo
+        disponibilidad.save()
+        
+        serializer = self.get_serializer(disponibilidad)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'])
+    def desbloquear(self, request, pk=None):
+        """Desbloquea un slot de disponibilidad"""
+        disponibilidad = self.get_object()
+        
+        disponibilidad.estado = 'disponible'
+        disponibilidad.motivo_bloqueo = None
+        disponibilidad.save()
+        
+        serializer = self.get_serializer(disponibilidad)
+        return Response(serializer.data)

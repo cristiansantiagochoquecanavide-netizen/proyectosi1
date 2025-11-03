@@ -29,6 +29,9 @@ urlpatterns = [  # Rutas a nivel de proyecto
     path('citas/', include('citas.urls')),  # Incluye rutas de citas
     path('pacientes/', include('pacientes.urls')),  # Incluye rutas de pacientes
     path('seguridad/', include('seguridad_y_personal.urls')),  # Incluye rutas de seguridad
+    path('atencion/', include('atencion.urls')),  # Incluye rutas de atención clínica (CU11-CU15)
+    path('inventario/', include('inventario_y_compras.urls')),  # Incluye rutas de inventario (CU18-CU19)
+    path('facturacion/', include('facturacion_y_compras.urls')),  # Incluye rutas de facturación (CU14)
     path('csrf/', csrf_token, name='csrf'),  # Endpoint para obtener cookie/token CSRF
 ]
 

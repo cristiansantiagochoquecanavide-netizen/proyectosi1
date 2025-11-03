@@ -35,6 +35,14 @@ class CitaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class DisponibilidadSerializer(serializers.ModelSerializer):
+    """Serializer para Disponibilidad (CU10: Configurar disponibilidad de odontólogo)"""
+    odontologo_nombre = serializers.CharField(source='id_odontologo.nombre', read_only=True)
+    
     class Meta:
         model = Disponibilidad
-        fields = '__all__'
+        fields = [
+            'id_disponibilidad', 'id_odontologo', 'fecha_inicio', 'fecha_fin',
+            'estado', 'motivo_bloqueo', 'created_at', 'updated_at',
+            'odontologo_nombre'
+        ]
+        read_only_fields = ['id_disponibilidad', 'created_at', 'updated_at']
