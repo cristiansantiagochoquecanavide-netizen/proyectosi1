@@ -41,11 +41,11 @@ export default function IniciarAtencion() {
     try {
       setLoadingCitas(true);
       // Obtener citas programadas que aún no tienen atención
-      const response = await apiGet('/citas/citas/?estado=programada');
+      const response = await apiGet('/citas/api/citas/?estado=programada');
       setCitas(response.results || response);
     } catch (err) {
       console.error('Error al cargar citas:', err);
-      setError('Error al cargar las citas programadas');
+      setError('Error al cargar las citas programadas. Verifique que el backend esté ejecutándose.');
     } finally {
       setLoadingCitas(false);
     }

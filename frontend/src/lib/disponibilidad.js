@@ -7,38 +7,38 @@ import { apiGet, apiPost, apiPut, apiDelete } from './api'
 // ============================================
 
 export async function listarDisponibilidad() {
-  return apiGet('/citas/disponibilidad/')
+  return apiGet('/citas/api/disponibilidades/')
 }
 
 export async function obtenerDisponibilidad(id) {
-  return apiGet(`/citas/disponibilidad/${id}/`)
+  return apiGet(`/citas/api/disponibilidades/${id}/`)
 }
 
 export async function crearDisponibilidad(data) {
-  return apiPost('/citas/disponibilidad/', data)
+  return apiPost('/citas/api/disponibilidades/', data)
 }
 
 export async function actualizarDisponibilidad(id, data) {
-  return apiPut(`/citas/disponibilidad/${id}/`, data)
+  return apiPut(`/citas/api/disponibilidades/${id}/`, data)
 }
 
 export async function eliminarDisponibilidad(id) {
-  return apiDelete(`/citas/disponibilidad/${id}/`)
+  return apiDelete(`/citas/api/disponibilidades/${id}/`)
 }
 
 // Acciones custom
 export async function listarDisponibilidadPorOdontologo(odontologoId) {
-  return apiGet(`/citas/disponibilidad/por_odontologo/?odontologo_id=${odontologoId}`)
+  return apiGet(`/citas/api/disponibilidades/por_odontologo/?odontologo_id=${odontologoId}`)
 }
 
 export async function listarDisponibilidadesDisponibles() {
-  return apiGet('/citas/disponibilidad/disponibles/')
+  return apiGet('/citas/api/disponibilidades/disponibles/')
 }
 
 export async function bloquearDisponibilidad(id, data) {
-  return apiPost(`/citas/disponibilidad/${id}/bloquear/`, data)
+  return apiPost(`/citas/api/disponibilidades/${id}/bloquear/`, data)
 }
 
 export async function desbloquearDisponibilidad(id) {
-  return apiPost(`/citas/disponibilidad/${id}/desbloquear/`)
+  return apiPost(`/citas/api/disponibilidades/${id}/desbloquear/`)
 }

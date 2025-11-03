@@ -58,7 +58,7 @@ export default function Disponibilidad() {
     try {
       const [disp, odont] = await Promise.all([
         listarDisponibilidad(),
-        apiGet('/citas/odontologos/'),
+        apiGet('/citas/api/odontologos/'),
       ]);
       setDisponibilidades(disp.results || disp);
       setOdontologos(odont.results || odont);

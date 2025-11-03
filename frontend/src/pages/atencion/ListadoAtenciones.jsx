@@ -78,7 +78,7 @@ export default function ListadoAtenciones() {
       setAtenciones(atencionesData);
 
       // Cargar pacientes para el filtro
-      const pacientesData = await apiGet('/pacientes/pacientes/');
+      const pacientesData = await apiGet('/pacientes/api/pacientes/');
       setPacientes(pacientesData.results || pacientesData);
     } catch (err) {
       console.error('Error al cargar atenciones:', err);

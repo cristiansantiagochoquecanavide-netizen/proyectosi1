@@ -72,7 +72,7 @@ export default function Odontograma() {
 
   const cargarPacientes = async () => {
     try {
-      const data = await apiGet('/pacientes/pacientes/');
+      const data = await apiGet('/pacientes/api/pacientes/');
       setPacientes(data.results || data);
       setLoading(false);
     } catch (err) {

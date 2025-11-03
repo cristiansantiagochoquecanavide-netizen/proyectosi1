@@ -66,7 +66,7 @@ export default function Tratamientos() {
 
   const cargarPacientes = async () => {
     try {
-      const data = await apiGet('/pacientes/pacientes/');
+      const data = await apiGet('/pacientes/api/pacientes/');
       setPacientes(data.results || data);
     } catch (err) {
       console.error('Error al cargar pacientes:', err);
