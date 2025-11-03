@@ -1,8 +1,9 @@
+
   const handleCancelar = async (atencion) => {
     if (!window.confirm('¿Está seguro de cancelar esta atención?')) return;
     try {
       await cancelarAtencion(atencion.id_atencion);
-      cargarDatos();
+      await cargarDatos();
     } catch (err) {
       let msg = 'Error al cancelar la atención';
       if (err && err.message) {
