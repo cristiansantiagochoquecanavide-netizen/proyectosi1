@@ -90,7 +90,7 @@ export default function Tratamientos() {
   const handlePacienteChange = (event, newValue) => {
     setPacienteSeleccionado(newValue);
     if (newValue) {
-      cargarTratamientos(newValue.id);
+      cargarTratamientos(newValue.id_paciente);
     } else {
       setTratamientos([]);
     }
@@ -119,7 +119,7 @@ export default function Tratamientos() {
     setGuardando(true);
     try {
       await crearTratamiento({
-        id_paciente: pacienteSeleccionado.id,
+        id_paciente: pacienteSeleccionado.id_paciente,
         nombre: nuevoTratamiento.nombre,
         descripcion: nuevoTratamiento.descripcion,
         costo_estimado: parseFloat(nuevoTratamiento.costo_estimado) || 0,
@@ -127,7 +127,7 @@ export default function Tratamientos() {
       });
 
       setOpenNuevo(false);
-      cargarTratamientos(pacienteSeleccionado.id);
+      cargarTratamientos(pacienteSeleccionado.id_paciente);
     } catch (err) {
       console.error('Error al crear tratamiento:', err);
       alert('Error al crear el tratamiento');
@@ -139,7 +139,7 @@ export default function Tratamientos() {
   const handleCambiarEstado = async (tratamientoId, nuevoEstado) => {
     try {
       await actualizarTratamiento(tratamientoId, { estado: nuevoEstado });
-      cargarTratamientos(pacienteSeleccionado.id);
+      cargarTratamientos(pacienteSeleccionado.id_paciente);
     } catch (err) {
       console.error('Error al actualizar estado:', err);
       alert('Error al actualizar el estado');
@@ -173,7 +173,7 @@ export default function Tratamientos() {
         <CardContent>
           <Autocomplete
             options={pacientes}
-            getOptionLabel={(p) => `${p.nombre} ${p.apellido_paterno} ${p.apellido_materno || ''}`}
+            getOptionLabel={(p) => p.nombre || ''}
             value={pacienteSeleccionado}
             onChange={handlePacienteChange}
             renderInput={(params) => (
