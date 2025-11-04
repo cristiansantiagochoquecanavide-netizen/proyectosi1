@@ -9,13 +9,16 @@ from pacientes.models import Paciente
 
 class ProcedimientoSerializer(serializers.ModelSerializer):
     """Serializer para Procedimiento (CU12: Registrar procedimientos en atención)"""
+    paciente_nombre = serializers.CharField(source='id_atencion.id_paciente.nombre', read_only=True)
+    
     class Meta:
         model = Procedimiento
         fields = [
             'id_procedimiento', 'id_atencion', 'nombre', 'descripcion',
-            'pieza_dental', 'duracion_minutos', 'costo', 'created_at'
+            'pieza_dental', 'duracion_minutos', 'costo', 'created_at',
+            'paciente_nombre'
         ]
-        read_only_fields = ['id_procedimiento', 'created_at']
+        read_only_fields = ['id_procedimiento', 'created_at', 'paciente_nombre']
 
 
 class AtencionSerializer(serializers.ModelSerializer):

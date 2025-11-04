@@ -217,7 +217,7 @@ export default function Procedimientos() {
                     <TableCell>{proc.id_procedimiento}</TableCell>
                     <TableCell>#{proc.id_atencion}</TableCell>
                     <TableCell>
-                      {atenciones.find(a => a.id_atencion === proc.id_atencion)?.paciente_nombre || '-'}
+                      {proc.paciente_nombre || '-'}
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" fontWeight="medium">
