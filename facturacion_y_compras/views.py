@@ -78,6 +78,36 @@ class FacturaViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=400)
     
+    @action(detail=True, methods=['post'])
+    def recalcular_total(self, request, pk=None):
+        """Recalcula el total de una factura específica"""
+        try:
+            factura = self.get_object()
+            factura.calcular_total()
+            factura.refresh_from_db()
+            serializer = self.get_serializer(factura)
+            return Response({
+                'message': 'Total recalculado correctamente',
+                'factura': serializer.data
+            })
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+    
+    @action(detail=False, methods=['post'])
+    def recalcular_todos(self, request):
+        """Recalcula el total de todas las facturas"""
+        try:
+            facturas = Factura.objects.all()
+            count = 0
+            for factura in facturas:
+                factura.calcular_total()
+                count += 1
+            return Response({
+                'message': f'{count} facturas recalculadas correctamente'
+            })
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+    
     @action(detail=False, methods=['get'])
     def pendientes(self, request):
         """Lista facturas pendientes de pago"""
