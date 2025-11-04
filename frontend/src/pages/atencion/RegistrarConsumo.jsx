@@ -37,7 +37,7 @@ import { listarInsumos } from '../../lib/inventario';
 import { registrarConsumo, listarMovimientosPorAtencion } from '../../lib/inventario';
 import { obtenerAtencion } from '../../lib/atencion';
 import { listarProcedimientos } from '../../lib/atencion';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../ui/AuthContext';
 
 export default function RegistrarConsumo() {
   const navigate = useNavigate();
