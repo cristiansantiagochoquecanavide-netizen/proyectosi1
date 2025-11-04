@@ -30,6 +30,14 @@ class FacturaViewSet(viewsets.ModelViewSet):
             from atencion.models import Atencion
             atencion = Atencion.objects.get(id_atencion=atencion_id)
             
+            # Verificar si ya existe una factura para esta atención
+            try:
+                factura_existente = Factura.objects.get(id_atencion=atencion)
+                serializer = self.get_serializer(factura_existente)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Factura.DoesNotExist:
+                pass  # No existe, continuar con la creación
+            
             # Generar número de factura
             ultima_factura = Factura.objects.order_by('-id_factura').first()
             numero = 1 if not ultima_factura else int(ultima_factura.numero_factura.split('-')[1]) + 1

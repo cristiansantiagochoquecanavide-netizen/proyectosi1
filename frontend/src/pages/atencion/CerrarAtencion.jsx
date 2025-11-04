@@ -60,6 +60,16 @@ export default function CerrarAtencion() {
       const atencionData = await obtenerAtencion(id);
       setAtencion(atencionData);
 
+      // Verificar si ya existe una factura (la atención tiene relación OneToOne con factura)
+      if (atencionData.factura) {
+        try {
+          const facturaData = await apiGet(`/facturacion/facturas/${atencionData.factura}/`);
+          setFactura(facturaData);
+        } catch (err) {
+          console.log('Error al cargar factura:', err);
+        }
+      }
+
       // Cargar procedimientos de la atención
       const procedimientosData = await apiGet('/atencion/procedimientos/');
       const procsAtencion = procedimientosData.filter(
@@ -74,16 +84,6 @@ export default function CerrarAtencion() {
       } catch (err) {
         console.log('No hay consumos registrados');
         setConsumos([]);
-      }
-
-      // Verificar si ya existe una factura
-      try {
-        const facturasData = await apiGet(`/facturacion/facturas/?atencion=${id}`);
-        if (facturasData && facturasData.length > 0) {
-          setFactura(facturasData[0]);
-        }
-      } catch (err) {
-        console.log('No hay factura aún');
       }
 
     } catch (err) {
