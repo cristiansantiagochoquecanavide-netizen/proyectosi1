@@ -30,6 +30,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import { useNavigate } from 'react-router-dom';
 import { listarAtenciones, finalizarAtencion, cancelarAtencion, listarAtencionesPorPaciente } from '../../lib/atencion';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -299,6 +300,14 @@ export default function ListadoAtenciones() {
                             title="Registrar procedimientos"
                           >
                             <MedicalServicesIcon />
+                          </IconButton>
+                          <IconButton
+                            color="secondary"
+                            size="small"
+                            onClick={() => navigate(`/atencion/${atencion.id_atencion}/consumo`)}
+                            title="Registrar consumo de insumos"
+                          >
+                            <InventoryIcon />
                           </IconButton>
                           <IconButton
                             color="success"
