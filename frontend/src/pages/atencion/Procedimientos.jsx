@@ -113,7 +113,13 @@ export default function Procedimientos() {
 
     setGuardando(true);
     try {
-      await registrarProcedimiento(formData);
+      // Asegurar que costo y duracion_minutos sean números
+      const dataToSend = {
+        ...formData,
+        costo: Number(formData.costo) || 0,
+        duracion_minutos: Number(formData.duracion_minutos) || 30,
+      };
+      await registrarProcedimiento(dataToSend);
       await cargarDatos();
       setOpenDialog(false);
       setError('');
@@ -229,7 +235,7 @@ export default function Procedimientos() {
                       )}
                     </TableCell>
                     <TableCell>{proc.duracion_minutos}</TableCell>
-                    <TableCell>{proc.costo.toFixed(2)}</TableCell>
+                    <TableCell>{proc.costo ? Number(proc.costo).toFixed(2) : '0.00'}</TableCell>
                     <TableCell>{formatearFecha(proc.created_at)}</TableCell>
                     <TableCell align="center">
                       <IconButton
