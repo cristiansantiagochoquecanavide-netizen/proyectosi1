@@ -29,6 +29,7 @@ import {
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
 import { useNavigate } from 'react-router-dom';
 import { listarAtenciones, finalizarAtencion, cancelarAtencion, listarAtencionesPorPaciente } from '../../lib/atencion';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -291,6 +292,14 @@ export default function ListadoAtenciones() {
                       </IconButton>
                       {atencion.estado === 'en_curso' && (
                         <>
+                          <IconButton
+                            color="info"
+                            size="small"
+                            onClick={() => navigate('/atencion/procedimientos', { state: { atencionId: atencion.id_atencion } })}
+                            title="Registrar procedimientos"
+                          >
+                            <MedicalServicesIcon />
+                          </IconButton>
                           <IconButton
                             color="success"
                             size="small"

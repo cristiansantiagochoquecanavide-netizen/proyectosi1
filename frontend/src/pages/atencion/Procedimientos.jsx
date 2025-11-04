@@ -27,9 +27,15 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { listarAtenciones, registrarProcedimiento, listarProcedimientos, eliminarProcedimiento } from '../../lib/atencion';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function Procedimientos() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const atencionIdProp = location.state?.atencionId;
+  
   const [procedimientos, setProcedimientos] = useState([]);
   const [atenciones, setAtenciones] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +45,7 @@ export default function Procedimientos() {
   const [openDialog, setOpenDialog] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [formData, setFormData] = useState({
-    id_atencion: '',
+    id_atencion: atencionIdProp || '',
     nombre: '',
     descripcion: '',
     pieza_dental: '',
@@ -74,7 +80,7 @@ export default function Procedimientos() {
 
   const handleOpenDialog = () => {
     setFormData({
-      id_atencion: '',
+      id_atencion: atencionIdProp || '',
       nombre: '',
       descripcion: '',
       pieza_dental: '',
@@ -145,7 +151,16 @@ export default function Procedimientos() {
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">Registro de Procedimientos</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {atencionIdProp && (
+            <IconButton onClick={() => navigate('/atencion')} color="primary">
+              <ArrowBackIcon />
+            </IconButton>
+          )}
+          <Typography variant="h4">
+            {atencionIdProp ? `Procedimientos - Atención #${atencionIdProp}` : 'Registro de Procedimientos'}
+          </Typography>
+        </Box>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -182,16 +197,16 @@ export default function Procedimientos() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {procedimientos.length === 0 ? (
+              {procedimientos.filter(p => !atencionIdProp || p.id_atencion === atencionIdProp).length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} align="center">
                     <Typography variant="body2" color="text.secondary">
-                      No hay procedimientos registrados
+                      No hay procedimientos registrados {atencionIdProp && 'para esta atención'}
                     </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                procedimientos.map((proc) => (
+                procedimientos.filter(p => !atencionIdProp || p.id_atencion === atencionIdProp).map((proc) => (
                   <TableRow key={proc.id_procedimiento} hover>
                     <TableCell>{proc.id_procedimiento}</TableCell>
                     <TableCell>#{proc.id_atencion}</TableCell>
