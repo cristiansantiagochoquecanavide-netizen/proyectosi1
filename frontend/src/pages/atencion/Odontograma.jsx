@@ -162,7 +162,7 @@ export default function Odontograma() {
 
     setGuardando(true);
     try {
-      await actualizarPiezaDental(odontograma.id, {
+      await actualizarPiezaDental(odontograma.id_odontograma, {
         numero_pieza: piezaEditando,
         estado: estadoPieza,
         ...caras,
