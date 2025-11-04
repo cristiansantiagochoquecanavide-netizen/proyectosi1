@@ -17,6 +17,7 @@ class InsumoViewSet(viewsets.ModelViewSet):
     """
     queryset = Insumo.objects.all()
     serializer_class = InsumoSerializer
+    lookup_field = 'id_insumo'
     
     @action(detail=False, methods=['get'])
     def necesitan_reposicion(self, request):
@@ -76,6 +77,7 @@ class MovimientoInventarioViewSet(viewsets.ModelViewSet):
     """
     queryset = MovimientoInventario.objects.all()
     serializer_class = MovimientoInventarioSerializer
+    lookup_field = 'id_movimiento'
     
     @action(detail=False, methods=['get'])
     def por_insumo(self, request):
@@ -135,6 +137,7 @@ class OrdenCompraViewSet(viewsets.ModelViewSet):
     """
     queryset = OrdenCompra.objects.all()
     serializer_class = OrdenCompraSerializer
+    lookup_field = 'id_orden'
     
     @action(detail=False, methods=['get'])
     def pendientes(self, request):
@@ -195,3 +198,4 @@ class DetalleOrdenCompraViewSet(viewsets.ModelViewSet):
     """
     queryset = DetalleOrdenCompra.objects.all()
     serializer_class = DetalleOrdenCompraSerializer
+    lookup_field = 'id_detalle'
