@@ -33,6 +33,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import WarningIcon from '@mui/icons-material/Warning';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { useNavigate } from 'react-router-dom';
 import { listarInsumos, eliminarInsumo, actualizarInsumo } from '../../lib/inventario';
 
@@ -143,6 +144,14 @@ export default function Inventario() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Inventario de Insumos</Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<SwapHorizIcon />}
+            onClick={() => navigate('/inventario/movimientos')}
+          >
+            Movimientos
+          </Button>
           <Button
             variant="outlined"
             color="warning"

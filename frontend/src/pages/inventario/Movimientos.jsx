@@ -18,7 +18,10 @@ import {
   MenuItem,
   Card,
   CardContent,
+  Button,
 } from '@mui/material';
+import InfoIcon from '@mui/icons-material/Info';
+import { useNavigate } from 'react-router-dom';
 import { listarMovimientos } from '../../lib/inventario';
 
 const TIPOS_MOVIMIENTO = {
@@ -32,6 +35,7 @@ const TIPOS_MOVIMIENTO = {
 };
 
 export default function Movimientos() {
+  const navigate = useNavigate();
   const [movimientos, setMovimientos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -58,9 +62,27 @@ export default function Movimientos() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Movimientos de Inventario
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4">
+          Movimientos de Inventario
+        </Typography>
+      </Box>
+
+      {/* Información sobre consumos */}
+      <Alert severity="info" icon={<InfoIcon />} sx={{ mb: 3 }}>
+        <Typography variant="body2">
+          <strong>Nota:</strong> Para registrar consumos de insumos durante una atención, vaya a{' '}
+          <Button
+            size="small"
+            variant="text"
+            onClick={() => navigate('/atencion/listado')}
+            sx={{ textTransform: 'none', p: 0, minWidth: 'auto' }}
+          >
+            Listado de Atenciones
+          </Button>
+          {' '}y seleccione el botón de inventario en la atención en curso.
+        </Typography>
+      </Alert>
 
       <Card sx={{ mb: 3 }}>
         <CardContent>
