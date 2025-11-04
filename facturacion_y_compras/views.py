@@ -54,11 +54,16 @@ class FacturaViewSet(viewsets.ModelViewSet):
             
             # Agregar procedimientos como detalles
             for procedimiento in atencion.procedimientos.all():
+                cantidad = Decimal('1')
+                precio_unitario = Decimal(str(procedimiento.costo))
+                subtotal = cantidad * precio_unitario
+                
                 DetalleFactura.objects.create(
                     id_factura=factura,
                     concepto=procedimiento.nombre,
-                    cantidad=Decimal('1'),
-                    precio_unitario=Decimal(str(procedimiento.costo)),
+                    cantidad=cantidad,
+                    precio_unitario=precio_unitario,
+                    subtotal=subtotal,
                     id_procedimiento=procedimiento
                 )
             
