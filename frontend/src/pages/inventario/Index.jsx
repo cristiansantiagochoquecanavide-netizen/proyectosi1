@@ -18,13 +18,23 @@ import {
   CircularProgress,
   TextField,
   InputAdornment,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useNavigate } from 'react-router-dom';
-import { listarInsumos } from '../../lib/inventario';
+import { listarInsumos, eliminarInsumo, actualizarInsumo } from '../../lib/inventario';
 
 export default function Inventario() {
   const navigate = useNavigate();
@@ -32,6 +42,11 @@ export default function Inventario() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busqueda, setBusqueda] = useState('');
+  
+  // Estados para edición
+  const [openEditar, setOpenEditar] = useState(false);
+  const [insumoEditando, setInsumoEditando] = useState(null);
+  const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
     cargarInsumos();
@@ -48,6 +63,57 @@ export default function Inventario() {
       setError('Error al cargar los insumos');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAbrirEditar = (insumo) => {
+    setInsumoEditando({ ...insumo });
+    setError('');
+    setOpenEditar(true);
+  };
+
+  const handleGuardarEdicion = async () => {
+    if (!insumoEditando.nombre.trim()) {
+      setError('El nombre es obligatorio');
+      return;
+    }
+
+    setGuardando(true);
+    try {
+      await actualizarInsumo(insumoEditando.id, {
+        nombre: insumoEditando.nombre,
+        codigo: insumoEditando.codigo,
+        descripcion: insumoEditando.descripcion,
+        categoria: insumoEditando.categoria,
+        stock_actual: parseInt(insumoEditando.stock_actual) || 0,
+        stock_minimo: parseInt(insumoEditando.stock_minimo) || 0,
+        stock_maximo: parseInt(insumoEditando.stock_maximo) || 0,
+        unidad_medida: insumoEditando.unidad_medida,
+        precio_unitario: parseFloat(insumoEditando.precio_unitario) || 0,
+      });
+
+      setOpenEditar(false);
+      setError('');
+      await cargarInsumos();
+    } catch (err) {
+      console.error('Error al actualizar insumo:', err);
+      setError('Error al actualizar el insumo');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const handleEliminar = async (id) => {
+    if (!window.confirm('¿Está seguro de eliminar este insumo? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    try {
+      await eliminarInsumo(id);
+      await cargarInsumos();
+    } catch (err) {
+      console.error('Error al eliminar insumo:', err);
+      setError('Error al eliminar el insumo');
     }
   };
 
@@ -179,9 +245,24 @@ export default function Inventario() {
                       )}
                     </TableCell>
                     <TableCell align="center">
-                      <IconButton size="small" color="primary">
-                        <EditIcon />
-                      </IconButton>
+                      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => handleAbrirEditar(insumo)}
+                          title="Editar insumo"
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleEliminar(insumo.id)}
+                          title="Eliminar insumo"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))
@@ -190,6 +271,148 @@ export default function Inventario() {
           </Table>
         </TableContainer>
       )}
+
+      {/* Modal Editar Insumo */}
+      <Dialog open={openEditar} onClose={() => setOpenEditar(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Editar Insumo</DialogTitle>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                required
+                label="Nombre"
+                value={insumoEditando?.nombre || ''}
+                onChange={(e) =>
+                  setInsumoEditando({ ...insumoEditando, nombre: e.target.value })
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                disabled
+                label="Código (Auto-generado)"
+                value={insumoEditando?.codigo || ''}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={2}
+                label="Descripción"
+                value={insumoEditando?.descripcion || ''}
+                onChange={(e) =>
+                  setInsumoEditando({ ...insumoEditando, descripcion: e.target.value })
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Categoría</InputLabel>
+                <Select
+                  value={insumoEditando?.categoria || 'material'}
+                  label="Categoría"
+                  onChange={(e) =>
+                    setInsumoEditando({ ...insumoEditando, categoria: e.target.value })
+                  }
+                >
+                  <MenuItem value="material">Material</MenuItem>
+                  <MenuItem value="medicamento">Medicamento</MenuItem>
+                  <MenuItem value="instrumento">Instrumento</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Unidad de Medida</InputLabel>
+                <Select
+                  value={insumoEditando?.unidad_medida || 'unidad'}
+                  label="Unidad de Medida"
+                  onChange={(e) =>
+                    setInsumoEditando({ ...insumoEditando, unidad_medida: e.target.value })
+                  }
+                >
+                  <MenuItem value="unidad">Unidad</MenuItem>
+                  <MenuItem value="caja">Caja</MenuItem>
+                  <MenuItem value="paquete">Paquete</MenuItem>
+                  <MenuItem value="frasco">Frasco</MenuItem>
+                  <MenuItem value="tubo">Tubo</MenuItem>
+                  <MenuItem value="litro">Litro</MenuItem>
+                  <MenuItem value="ml">Mililitro</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Stock Actual"
+                value={insumoEditando?.stock_actual || 0}
+                onChange={(e) =>
+                  setInsumoEditando({ ...insumoEditando, stock_actual: e.target.value })
+                }
+                inputProps={{ min: 0 }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Stock Mínimo"
+                value={insumoEditando?.stock_minimo || 0}
+                onChange={(e) =>
+                  setInsumoEditando({ ...insumoEditando, stock_minimo: e.target.value })
+                }
+                inputProps={{ min: 0 }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Stock Máximo"
+                value={insumoEditando?.stock_maximo || 0}
+                onChange={(e) =>
+                  setInsumoEditando({ ...insumoEditando, stock_maximo: e.target.value })
+                }
+                inputProps={{ min: 0 }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Precio Unitario (Bs.)"
+                value={insumoEditando?.precio_unitario || 0}
+                onChange={(e) =>
+                  setInsumoEditando({ ...insumoEditando, precio_unitario: e.target.value })
+                }
+                inputProps={{ min: 0, step: 0.01 }}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenEditar(false)} disabled={guardando}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleGuardarEdicion}
+            variant="contained"
+            disabled={guardando}
+            startIcon={guardando && <CircularProgress size={20} />}
+          >
+            {guardando ? 'Guardando...' : 'Actualizar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

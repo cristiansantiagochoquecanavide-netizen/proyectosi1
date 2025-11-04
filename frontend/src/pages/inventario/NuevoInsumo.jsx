@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -35,12 +35,42 @@ export default function NuevoInsumo() {
     precio_unitario: '',
   });
 
+  // Generar código automáticamente basado en categoría y timestamp
+  const generarCodigo = (categoria) => {
+    const prefijos = {
+      material: 'MAT',
+      medicamento: 'MED',
+      instrumento: 'INS',
+    };
+    const prefijo = prefijos[categoria] || 'INS';
+    const timestamp = Date.now().toString().slice(-6); // Últimos 6 dígitos del timestamp
+    const random = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+    return `${prefijo}-${timestamp}-${random}`;
+  };
+
+  useEffect(() => {
+    // Generar código automáticamente al cargar el componente
+    setFormData(prev => ({
+      ...prev,
+      codigo: generarCodigo(prev.categoria)
+    }));
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => {
+      const newData = {
+        ...prev,
+        [name]: value,
+      };
+      
+      // Si cambió la categoría, regenerar el código
+      if (name === 'categoria') {
+        newData.codigo = generarCodigo(value);
+      }
+      
+      return newData;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -51,10 +81,6 @@ export default function NuevoInsumo() {
     // Validaciones
     if (!formData.nombre.trim()) {
       setError('El nombre es obligatorio');
-      return;
-    }
-    if (!formData.codigo.trim()) {
-      setError('El código es obligatorio');
       return;
     }
     if (parseFloat(formData.precio_unitario) <= 0) {
@@ -115,12 +141,11 @@ export default function NuevoInsumo() {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  required
-                  label="Código del Insumo"
+                  disabled
+                  label="Código del Insumo (Auto-generado)"
                   name="codigo"
                   value={formData.codigo}
-                  onChange={handleChange}
-                  placeholder="Ej: COMP-A2-001"
+                  helperText="El código se genera automáticamente"
                 />
               </Grid>
 
