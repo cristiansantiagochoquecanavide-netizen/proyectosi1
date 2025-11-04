@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from datetime import date
 
 # CU11: Iniciar atención desde cita
 # - Se dispara desde el módulo de Citas
@@ -127,7 +128,7 @@ class Tratamiento(models.Model):
     id_odontologo = models.ForeignKey('citas.Odontologo', on_delete=models.CASCADE, related_name='tratamientos')
     nombre = models.CharField(max_length=255)  # Nombre del tratamiento (ej: "Ortodoncia", "Rehabilitación oral")
     descripcion = models.TextField()  # Descripción detallada del tratamiento
-    fecha_inicio = models.DateField(default=timezone.now)
+    fecha_inicio = models.DateField(default=date.today)
     fecha_fin_estimada = models.DateField(null=True, blank=True)
     fecha_fin_real = models.DateField(null=True, blank=True)
     estado = models.CharField(max_length=50, choices=[
