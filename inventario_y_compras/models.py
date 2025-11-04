@@ -83,8 +83,8 @@ class MovimientoInventario(models.Model):
         ('vencimiento', 'Baja por Vencimiento')
     ])
     cantidad = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
-    stock_anterior = models.DecimalField(max_digits=10, decimal_places=2)  # Stock antes del movimiento
-    stock_posterior = models.DecimalField(max_digits=10, decimal_places=2)  # Stock después del movimiento
+    stock_anterior = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Stock antes del movimiento
+    stock_posterior = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Stock después del movimiento
     
     # Relación con atención clínica (solo para consumos en atención - CU19)
     id_atencion = models.ForeignKey('atencion.Atencion', on_delete=models.SET_NULL, null=True, blank=True, related_name='consumos')
