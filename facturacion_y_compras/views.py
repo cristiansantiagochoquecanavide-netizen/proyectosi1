@@ -57,13 +57,16 @@ class FacturaViewSet(viewsets.ModelViewSet):
                 DetalleFactura.objects.create(
                     id_factura=factura,
                     concepto=procedimiento.nombre,
-                    cantidad=1,
-                    precio_unitario=procedimiento.costo,
+                    cantidad=Decimal('1'),
+                    precio_unitario=Decimal(str(procedimiento.costo)),
                     id_procedimiento=procedimiento
                 )
             
             # Calcular total
             factura.calcular_total()
+            
+            # Refrescar factura desde la base de datos para obtener valores actualizados
+            factura.refresh_from_db()
             
             serializer = self.get_serializer(factura)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
