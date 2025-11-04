@@ -104,9 +104,22 @@ export default function Odontograma() {
         }
         setPiezas(piezasMap);
       } else {
-        setError('El paciente no tiene odontograma registrado');
-        setOdontograma(null);
-        setPiezas({});
+        // Si no existe odontograma, intentar crearlo automáticamente
+        try {
+          const { crearOdontograma } = await import('../../lib/atencion');
+          const nuevoOdontograma = await crearOdontograma({ 
+            id_paciente: pacienteId,
+            observaciones: 'Odontograma creado automáticamente'
+          });
+          setOdontograma(nuevoOdontograma);
+          setPiezas({});
+          setError('');
+        } catch (createErr) {
+          console.error('Error al crear odontograma:', createErr);
+          setError('El paciente no tiene odontograma registrado. Debe crearse desde el backend.');
+          setOdontograma(null);
+          setPiezas({});
+        }
       }
     } catch (err) {
       console.error('Error al cargar odontograma:', err);
@@ -119,7 +132,7 @@ export default function Odontograma() {
   const handlePacienteChange = (event, newValue) => {
     setPacienteSeleccionado(newValue);
     if (newValue) {
-      cargarOdontograma(newValue.id);
+      cargarOdontograma(newValue.id_paciente);
     } else {
       setOdontograma(null);
       setPiezas({});
@@ -157,7 +170,7 @@ export default function Odontograma() {
       });
 
       // Recargar odontograma
-      await cargarOdontograma(pacienteSeleccionado.id);
+      await cargarOdontograma(pacienteSeleccionado.id_paciente);
       setOpenEditar(false);
     } catch (err) {
       console.error('Error al actualizar pieza:', err);
@@ -257,7 +270,7 @@ export default function Odontograma() {
         <CardContent>
           <Autocomplete
             options={pacientes}
-            getOptionLabel={(p) => `${p.nombre} ${p.apellido_paterno} ${p.apellido_materno || ''}`}
+            getOptionLabel={(p) => p.nombre || ''}
             value={pacienteSeleccionado}
             onChange={handlePacienteChange}
             renderInput={(params) => (
