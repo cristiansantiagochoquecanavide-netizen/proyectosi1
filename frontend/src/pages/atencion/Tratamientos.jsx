@@ -89,7 +89,11 @@ export default function Tratamientos() {
       if (odontologo) {
         setOdontologoId(odontologo.id_odontologo);
       } else {
-        console.warn('No se encontró odontólogo para este usuario');
+        // Si no se encuentra, usar el primer odontólogo disponible como fallback
+        console.warn('No se encontró odontólogo para este usuario, usando el primero disponible');
+        if (odontologosData.length > 0) {
+          setOdontologoId(odontologosData[0].id_odontologo);
+        }
       }
     } catch (err) {
       console.error('Error al cargar odontólogo:', err);
@@ -126,20 +130,21 @@ export default function Tratamientos() {
       costo_estimado: '',
       estado: 'planificado',
     });
+    setError('');
     setOpenNuevo(true);
   };
 
   const handleGuardarNuevo = async () => {
     if (!pacienteSeleccionado) {
-      alert('Debe seleccionar un paciente');
+      setError('Debe seleccionar un paciente');
       return;
     }
     if (!nuevoTratamiento.nombre.trim()) {
-      alert('Debe ingresar el nombre del tratamiento');
+      setError('Debe ingresar el nombre del tratamiento');
       return;
     }
     if (!odontologoId) {
-      alert('No se pudo identificar al odontólogo. Por favor, recargue la página.');
+      setError('No hay odontólogos disponibles en el sistema. Por favor, contacte al administrador.');
       return;
     }
 
@@ -155,10 +160,12 @@ export default function Tratamientos() {
       });
 
       setOpenNuevo(false);
+      setError('');
       cargarTratamientos(pacienteSeleccionado.id_paciente);
     } catch (err) {
       console.error('Error al crear tratamiento:', err);
-      alert('Error al crear el tratamiento');
+      const errorMsg = err.response?.data?.detail || err.message || 'Error al crear el tratamiento';
+      setError(errorMsg);
     } finally {
       setGuardando(false);
     }
@@ -290,6 +297,11 @@ export default function Tratamientos() {
       <Dialog open={openNuevo} onClose={() => setOpenNuevo(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Nuevo Tratamiento</DialogTitle>
         <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12}>
               <TextField
