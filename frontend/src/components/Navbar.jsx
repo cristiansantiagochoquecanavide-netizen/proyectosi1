@@ -62,6 +62,7 @@ const menuItems = [
       { text: 'Listado Atenciones', path: '/atencion' },
       { text: 'Odontograma', path: '/atencion/odontograma' },
       { text: 'Tratamientos', path: '/atencion/tratamientos' },
+      { text: 'Procedimientos', path: '/atencion/procedimientos' },
     ]
   },
   { 
