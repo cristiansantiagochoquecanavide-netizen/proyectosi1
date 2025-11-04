@@ -56,8 +56,8 @@ class Factura(models.Model):
     def calcular_total(self):
         """Calcula el total de la factura basado en los detalles"""
         detalles = self.detalles.all()
-        self.subtotal = sum(detalle.subtotal for detalle in detalles)
-        self.total = self.subtotal - self.descuento + self.impuestos
+        self.subtotal = sum((Decimal(str(detalle.subtotal)) for detalle in detalles), Decimal('0'))
+        self.total = self.subtotal - Decimal(str(self.descuento)) + Decimal(str(self.impuestos))
         self.saldo_pendiente = self.total
         self.save()
 
