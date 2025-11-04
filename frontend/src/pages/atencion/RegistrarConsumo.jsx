@@ -208,7 +208,7 @@ export default function RegistrarConsumo() {
       {/* Encabezado */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton onClick={() => navigate('/atencion/listado')}>
+          <IconButton onClick={() => navigate('/atencion')}>
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h4">

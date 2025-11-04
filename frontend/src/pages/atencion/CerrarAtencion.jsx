@@ -175,7 +175,7 @@ export default function CerrarAtencion() {
         <Box display="flex" alignItems="center" gap={2}>
           <Button
             startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/atencion/listado')}
+            onClick={() => navigate('/atencion')}
           >
             Volver
           </Button>

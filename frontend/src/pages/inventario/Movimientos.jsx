@@ -75,7 +75,7 @@ export default function Movimientos() {
           <Button
             size="small"
             variant="text"
-            onClick={() => navigate('/atencion/listado')}
+            onClick={() => navigate('/atencion')}
             sx={{ textTransform: 'none', p: 0, minWidth: 'auto' }}
           >
             Listado de Atenciones
