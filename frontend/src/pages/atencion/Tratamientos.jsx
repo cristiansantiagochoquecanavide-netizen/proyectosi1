@@ -29,6 +29,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { apiGet } from '../../lib/api';
+import { useAuth } from '../../ui/AuthContext';
 import {
   listarTratamientosPorPaciente,
   crearTratamiento,
@@ -44,6 +45,7 @@ const ESTADOS_TRATAMIENTO = [
 ];
 
 export default function Tratamientos() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [pacientes, setPacientes] = useState([]);
@@ -115,11 +117,16 @@ export default function Tratamientos() {
       alert('Debe ingresar el nombre del tratamiento');
       return;
     }
+    if (!user || !user.id_odontologo) {
+      alert('No se pudo identificar al odontólogo');
+      return;
+    }
 
     setGuardando(true);
     try {
       await crearTratamiento({
         id_paciente: pacienteSeleccionado.id_paciente,
+        id_odontologo: user.id_odontologo,
         nombre: nuevoTratamiento.nombre,
         descripcion: nuevoTratamiento.descripcion,
         costo_estimado: parseFloat(nuevoTratamiento.costo_estimado) || 0,
