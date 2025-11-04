@@ -312,8 +312,8 @@ export default function ListadoAtenciones() {
                           <IconButton
                             color="success"
                             size="small"
-                            onClick={() => handleAbrirFinalizar(atencion)}
-                            title="Finalizar atención"
+                            onClick={() => navigate(`/atencion/${atencion.id_atencion}/cerrar`)}
+                            title="Cerrar atención y generar factura"
                           >
                             <CheckCircleIcon />
                           </IconButton>
