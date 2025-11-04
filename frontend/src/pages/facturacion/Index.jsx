@@ -105,12 +105,12 @@ export default function Facturacion() {
               {facturasFiltradas.map((factura) => {
                 const estadoConfig = ESTADOS[factura.estado] || ESTADOS.borrador;
                 return (
-                  <TableRow key={factura.id} hover>
+                  <TableRow key={factura.id_factura} hover>
                     <TableCell>{factura.numero_factura}</TableCell>
                     <TableCell>
                       {new Date(factura.fecha_emision).toLocaleDateString('es-BO')}
                     </TableCell>
-                    <TableCell>{factura.nombre_paciente}</TableCell>
+                    <TableCell>{factura.paciente_nombre || 'N/A'}</TableCell>
                     <TableCell>
                       <Chip label={estadoConfig.label} color={estadoConfig.color} size="small" />
                     </TableCell>
