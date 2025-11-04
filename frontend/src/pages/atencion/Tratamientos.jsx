@@ -30,6 +30,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import { apiGet } from '../../lib/api';
 import { useAuth } from '../../ui/AuthContext';
 import {
@@ -56,9 +57,11 @@ export default function Tratamientos() {
   const [tratamientos, setTratamientos] = useState([]);
   const [odontologoId, setOdontologoId] = useState(null);
 
-  // Modal nuevo tratamiento
+  // Modal nuevo/editar tratamiento
   const [openNuevo, setOpenNuevo] = useState(false);
+  const [openEditar, setOpenEditar] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const [tratamientoEditando, setTratamientoEditando] = useState(null);
   const [nuevoTratamiento, setNuevoTratamiento] = useState({
     nombre: '',
     descripcion: '',
@@ -176,11 +179,68 @@ export default function Tratamientos() {
 
   const handleCambiarEstado = async (tratamientoId, nuevoEstado) => {
     try {
-      await actualizarTratamiento(tratamientoId, { estado: nuevoEstado });
-      cargarTratamientos(pacienteSeleccionado.id_paciente);
+      setError('');
+      const tratamiento = tratamientos.find(t => t.id_tratamiento === tratamientoId);
+      if (!tratamiento) return;
+      
+      // Enviar todos los campos requeridos
+      await actualizarTratamiento(tratamientoId, {
+        id_paciente: tratamiento.id_paciente,
+        id_odontologo: tratamiento.id_odontologo,
+        nombre: tratamiento.nombre,
+        descripcion: tratamiento.descripcion,
+        costo_estimado: tratamiento.costo_estimado,
+        estado: nuevoEstado,
+      });
+      
+      await cargarTratamientos(pacienteSeleccionado.id_paciente);
     } catch (err) {
       console.error('Error al actualizar estado:', err);
-      setError('Error al actualizar el estado del tratamiento');
+      const errorMsg = err.response?.data?.detail || err.message || 'Error al actualizar el estado del tratamiento';
+      setError(errorMsg);
+    }
+  };
+
+  const handleAbrirEditar = (tratamiento) => {
+    setTratamientoEditando({
+      id_tratamiento: tratamiento.id_tratamiento,
+      nombre: tratamiento.nombre,
+      descripcion: tratamiento.descripcion,
+      costo_estimado: tratamiento.costo_estimado,
+      estado: tratamiento.estado,
+    });
+    setError('');
+    setOpenEditar(true);
+  };
+
+  const handleGuardarEdicion = async () => {
+    if (!tratamientoEditando.nombre.trim()) {
+      setError('Debe ingresar el nombre del tratamiento');
+      return;
+    }
+
+    setGuardando(true);
+    try {
+      const tratamiento = tratamientos.find(t => t.id_tratamiento === tratamientoEditando.id_tratamiento);
+      
+      await actualizarTratamiento(tratamientoEditando.id_tratamiento, {
+        id_paciente: tratamiento.id_paciente,
+        id_odontologo: tratamiento.id_odontologo,
+        nombre: tratamientoEditando.nombre,
+        descripcion: tratamientoEditando.descripcion,
+        costo_estimado: parseFloat(tratamientoEditando.costo_estimado) || 0,
+        estado: tratamientoEditando.estado,
+      });
+
+      setOpenEditar(false);
+      setError('');
+      await cargarTratamientos(pacienteSeleccionado.id_paciente);
+    } catch (err) {
+      console.error('Error al actualizar tratamiento:', err);
+      const errorMsg = err.response?.data?.detail || err.message || 'Error al actualizar el tratamiento';
+      setError(errorMsg);
+    } finally {
+      setGuardando(false);
     }
   };
 
@@ -301,6 +361,14 @@ export default function Tratamientos() {
                           )}
                           <IconButton
                             size="small"
+                            color="primary"
+                            onClick={() => handleAbrirEditar(tratamiento)}
+                            title="Editar tratamiento"
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
                             color="error"
                             onClick={() => handleEliminar(tratamiento.id_tratamiento)}
                             title="Eliminar tratamiento"
@@ -394,6 +462,89 @@ export default function Tratamientos() {
             startIcon={guardando && <CircularProgress size={20} />}
           >
             {guardando ? 'Guardando...' : 'Crear Tratamiento'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal Editar Tratamiento */}
+      <Dialog open={openEditar} onClose={() => setOpenEditar(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Editar Tratamiento</DialogTitle>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                required
+                label="Nombre del Tratamiento"
+                value={tratamientoEditando?.nombre || ''}
+                onChange={(e) =>
+                  setTratamientoEditando({ ...tratamientoEditando, nombre: e.target.value })
+                }
+                placeholder="Ej: Ortodoncia, Implante dental, etc."
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                required
+                multiline
+                rows={3}
+                label="Descripción"
+                value={tratamientoEditando?.descripcion || ''}
+                onChange={(e) =>
+                  setTratamientoEditando({ ...tratamientoEditando, descripcion: e.target.value })
+                }
+                placeholder="Describe el tratamiento a realizar"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Costo Estimado (Bs.)"
+                value={tratamientoEditando?.costo_estimado || ''}
+                onChange={(e) =>
+                  setTratamientoEditando({ ...tratamientoEditando, costo_estimado: e.target.value })
+                }
+                inputProps={{ min: 0, step: 0.01 }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Estado</InputLabel>
+                <Select
+                  value={tratamientoEditando?.estado || 'planificado'}
+                  label="Estado"
+                  onChange={(e) =>
+                    setTratamientoEditando({ ...tratamientoEditando, estado: e.target.value })
+                  }
+                >
+                  {ESTADOS_TRATAMIENTO.map((estado) => (
+                    <MenuItem key={estado.value} value={estado.value}>
+                      {estado.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenEditar(false)} disabled={guardando}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleGuardarEdicion}
+            variant="contained"
+            disabled={guardando}
+            startIcon={guardando && <CircularProgress size={20} />}
+          >
+            {guardando ? 'Guardando...' : 'Actualizar Tratamiento'}
           </Button>
         </DialogActions>
       </Dialog>
