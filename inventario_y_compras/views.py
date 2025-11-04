@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
+from decimal import Decimal
 from .models import (
     Insumo, MovimientoInventario, OrdenCompra, DetalleOrdenCompra
 )
@@ -115,10 +116,13 @@ class MovimientoInventarioViewSet(viewsets.ModelViewSet):
             }, status=400)
         
         try:
+            # Convertir cantidad a Decimal
+            cantidad_decimal = Decimal(str(cantidad))
+            
             movimiento = MovimientoInventario.objects.create(
                 id_insumo_id=insumo_id,
                 tipo_movimiento='consumo',
-                cantidad=float(cantidad),
+                cantidad=cantidad_decimal,
                 id_atencion_id=atencion_id,
                 id_procedimiento_id=procedimiento_id if procedimiento_id else None,
                 motivo=request.data.get('motivo', 'Consumo en atención'),

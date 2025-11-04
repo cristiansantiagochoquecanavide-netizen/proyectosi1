@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator
+from decimal import Decimal
 
 # CU18: Gestionar insumos
 # - Catálogo de insumos odontológicos (materiales, medicamentos, instrumentos)
@@ -55,6 +56,10 @@ class Insumo(models.Model):
 
     def ajustar_stock(self, cantidad, tipo_movimiento):
         """Ajusta el stock según el tipo de movimiento"""
+        # Convertir cantidad a Decimal si no lo es
+        if not isinstance(cantidad, Decimal):
+            cantidad = Decimal(str(cantidad))
+        
         if tipo_movimiento in ['entrada', 'compra', 'devolucion']:
             self.stock_actual += cantidad
         elif tipo_movimiento in ['salida', 'consumo', 'ajuste_negativo']:
@@ -100,6 +105,10 @@ class MovimientoInventario(models.Model):
 
     def save(self, *args, **kwargs):
         """Sobrescribe save para actualizar automáticamente el stock del insumo"""
+        # Convertir cantidad a Decimal si no lo es
+        if not isinstance(self.cantidad, Decimal):
+            self.cantidad = Decimal(str(self.cantidad))
+        
         # Guardar stock anterior
         if not self.pk:  # Solo en creación
             self.stock_anterior = self.id_insumo.stock_actual
