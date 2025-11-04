@@ -23,8 +23,8 @@ import {
   Checkbox,
   Autocomplete,
 } from '@mui/material';
-import { apiGet } from '../../lib/api';
-import { obtenerOdontogramaPorPaciente, actualizarPiezaDental } from '../../lib/atencion';
+import { apiGet, API_BASE_URL } from '../../lib/api';
+import { obtenerOdontogramaPorPaciente, actualizarPiezaDental, subirImagenOdontograma } from '../../lib/atencion';
 
 // Sistema FDI de numeración dental (estándar internacional)
 const DIENTES_SUPERIOR_DERECHA = [18, 17, 16, 15, 14, 13, 12, 11];
@@ -65,6 +65,9 @@ export default function Odontograma() {
   });
   const [observaciones, setObservaciones] = useState('');
   const [guardando, setGuardando] = useState(false);
+  
+  // Estado para subir imagen
+  const [subiendoImagen, setSubiendoImagen] = useState(false);
 
   useEffect(() => {
     cargarPacientes();
@@ -164,6 +167,35 @@ export default function Odontograma() {
     }
   };
 
+  const handleSubirImagen = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!odontograma) {
+      alert('No se ha cargado el odontograma');
+      return;
+    }
+
+    // Validar que sea una imagen
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor seleccione un archivo de imagen válido');
+      return;
+    }
+
+    setSubiendoImagen(true);
+    try {
+      await subirImagenOdontograma(odontograma.id_odontograma, file);
+      // Recargar odontograma para obtener la nueva imagen
+      await cargarOdontograma(pacienteSeleccionado.id_paciente);
+      alert('Imagen del odontograma actualizada correctamente');
+    } catch (err) {
+      console.error('Error al subir imagen:', err);
+      alert('Error al subir la imagen');
+    } finally {
+      setSubiendoImagen(false);
+    }
+  };
+
   const getColorPieza = (numeroPieza) => {
     const pieza = piezas[numeroPieza];
     if (!pieza) return '#f5f5f5';
@@ -239,6 +271,51 @@ export default function Odontograma() {
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
+      )}
+      
+      {/* Botón para subir/actualizar imagen del odontograma */}
+      {odontograma && (
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+              <Button
+                variant="contained"
+                component="label"
+                disabled={subiendoImagen}
+              >
+                {subiendoImagen ? 'Subiendo...' : 'Actualizar Odontograma'}
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleSubirImagen}
+                />
+              </Button>
+              
+              {odontograma.imagen && (
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    Imagen actual del odontograma:
+                  </Typography>
+                  <Box
+                    component="img"
+                    src={`${API_BASE_URL || ''}${odontograma.imagen}`}
+                    alt="Odontograma"
+                    sx={{
+                      maxWidth: '100%',
+                      maxHeight: 400,
+                      objectFit: 'contain',
+                      border: '1px solid #ddd',
+                      borderRadius: 1,
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => window.open(`${API_BASE_URL || ''}${odontograma.imagen}`, '_blank')}
+                  />
+                </Box>
+              )}
+            </Box>
+          </CardContent>
+        </Card>
       )}
 
       {loading ? (

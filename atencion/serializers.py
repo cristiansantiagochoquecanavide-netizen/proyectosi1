@@ -83,12 +83,13 @@ class OdontogramaSerializer(serializers.ModelSerializer):
     """Serializer para Odontograma (CU13: Actualizar odontograma)"""
     piezas = PiezaDentalSerializer(many=True, read_only=True)
     paciente_nombre = serializers.CharField(source='id_paciente.nombre', read_only=True)
+    imagen = serializers.ImageField(required=False, allow_null=True)
     
     class Meta:
         model = Odontograma
         fields = [
             'id_odontograma', 'id_paciente', 'fecha_registro',
-            'observaciones', 'created_at', 'updated_at',
+            'observaciones', 'imagen', 'created_at', 'updated_at',
             'piezas', 'paciente_nombre'
         ]
         read_only_fields = ['id_odontograma', 'created_at', 'updated_at']

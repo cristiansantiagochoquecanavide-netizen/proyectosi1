@@ -105,6 +105,25 @@ export async function actualizarPiezaDental(odontogramaId, data) {
   return apiPost(`/atencion/odontogramas/${odontogramaId}/actualizar_pieza/`, data)
 }
 
+export async function subirImagenOdontograma(odontogramaId, file) {
+  const formData = new FormData()
+  formData.append('imagen', file)
+  
+  const url = `/atencion/odontogramas/${odontogramaId}/subir_imagen/`
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData,
+    credentials: 'include'
+  })
+  
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Error al subir imagen: ${response.status} ${text}`)
+  }
+  
+  return response.json()
+}
+
 // ============================================
 // PIEZAS DENTALES
 // ============================================

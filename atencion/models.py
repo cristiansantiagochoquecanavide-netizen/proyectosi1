@@ -60,11 +60,13 @@ class Procedimiento(models.Model):
 # CU13: Actualizar odontograma
 # - Registra el estado de cada pieza dental del paciente
 # - Sistema de numeración dental FDI (11-18, 21-28, 31-38, 41-48)
+# - Permite subir imagen del odontograma
 class Odontograma(models.Model):
     id_odontograma = models.AutoField(primary_key=True)
     id_paciente = models.ForeignKey('pacientes.Paciente', on_delete=models.CASCADE, related_name='odontogramas')
     fecha_registro = models.DateTimeField(default=timezone.now)
     observaciones = models.TextField(blank=True)
+    imagen = models.ImageField(upload_to='odontogramas/', null=True, blank=True)  # Imagen del odontograma
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -75,6 +77,11 @@ class Odontograma(models.Model):
 
     def __str__(self):
         return f"Odontograma de {self.id_paciente.nombre} - {self.fecha_registro.date()}"
+    
+    def get_upload_path(self):
+        """Retorna la ruta de la carpeta del odontograma del paciente"""
+        nombre_paciente = self.id_paciente.nombre.replace(' ', '_')
+        return f'odontogramas/odontograma-{nombre_paciente}/'
 
 
 class PiezaDental(models.Model):

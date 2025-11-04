@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.utils import timezone
 from .models import (
     Atencion, Procedimiento, Odontograma, PiezaDental,
@@ -135,6 +136,52 @@ class OdontogramaViewSet(viewsets.ModelViewSet):
             pieza.save()
         
         serializer = PiezaDentalSerializer(pieza)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'], parser_classes=[MultiPartParser, FormParser])
+    def subir_imagen(self, request, pk=None):
+        """
+        Sube o actualiza la imagen del odontograma del paciente.
+        La imagen se guarda en: media/odontogramas/odontograma-{nombre_paciente}/
+        """
+        import os
+        from django.conf import settings
+        
+        odontograma = self.get_object()
+        imagen = request.FILES.get('imagen')
+        
+        if not imagen:
+            return Response({'error': 'No se proporcionó ninguna imagen'}, status=400)
+        
+        # Crear carpeta específica del paciente si no existe
+        nombre_paciente = odontograma.id_paciente.nombre.replace(' ', '_')
+        carpeta_paciente = os.path.join(
+            settings.MEDIA_ROOT,
+            'odontogramas',
+            f'odontograma-{nombre_paciente}'
+        )
+        os.makedirs(carpeta_paciente, exist_ok=True)
+        
+        # Guardar la imagen con un nombre específico
+        extension = os.path.splitext(imagen.name)[1]
+        nombre_archivo = f'odontograma{extension}'
+        ruta_relativa = os.path.join('odontogramas', f'odontograma-{nombre_paciente}', nombre_archivo)
+        
+        # Eliminar imagen anterior si existe
+        if odontograma.imagen:
+            ruta_anterior = os.path.join(settings.MEDIA_ROOT, str(odontograma.imagen))
+            if os.path.exists(ruta_anterior):
+                os.remove(ruta_anterior)
+        
+        # Guardar la nueva imagen
+        odontograma.imagen = ruta_relativa
+        with open(os.path.join(settings.MEDIA_ROOT, ruta_relativa), 'wb+') as destino:
+            for chunk in imagen.chunks():
+                destino.write(chunk)
+        
+        odontograma.save()
+        
+        serializer = self.get_serializer(odontograma)
         return Response(serializer.data)
 
 
