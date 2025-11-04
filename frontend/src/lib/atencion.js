@@ -1,10 +1,11 @@
+// API para módulo de Atención Clínica
+// CU11-CU15, CU19: Atenciones, Procedimientos, Odontogramas, Tratamientos
+import { apiGet, apiPost, apiPut, apiDelete, apiPostForm } from './api'
+
 // Cancela una atención
 export async function cancelarAtencion(id) {
   return apiPost(`/atencion/atenciones/${id}/cancelar/`, {});
 }
-// API para módulo de Atención Clínica
-// CU11-CU15, CU19: Atenciones, Procedimientos, Odontogramas, Tratamientos
-import { apiGet, apiPost, apiPut, apiDelete } from './api'
 
 // ============================================
 // ATENCIONES (CU11: Iniciar atención desde cita)
@@ -109,19 +110,7 @@ export async function subirImagenOdontograma(odontogramaId, file) {
   const formData = new FormData()
   formData.append('imagen', file)
   
-  const url = `/atencion/odontogramas/${odontogramaId}/subir_imagen/`
-  const response = await fetch(url, {
-    method: 'POST',
-    body: formData,
-    credentials: 'include'
-  })
-  
-  if (!response.ok) {
-    const text = await response.text().catch(() => '')
-    throw new Error(`Error al subir imagen: ${response.status} ${text}`)
-  }
-  
-  return response.json()
+  return apiPostForm(`/atencion/odontogramas/${odontogramaId}/subir_imagen/`, formData)
 }
 
 // ============================================

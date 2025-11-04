@@ -147,42 +147,51 @@ class OdontogramaViewSet(viewsets.ModelViewSet):
         import os
         from django.conf import settings
         
-        odontograma = self.get_object()
-        imagen = request.FILES.get('imagen')
-        
-        if not imagen:
-            return Response({'error': 'No se proporcionó ninguna imagen'}, status=400)
-        
-        # Crear carpeta específica del paciente si no existe
-        nombre_paciente = odontograma.id_paciente.nombre.replace(' ', '_')
-        carpeta_paciente = os.path.join(
-            settings.MEDIA_ROOT,
-            'odontogramas',
-            f'odontograma-{nombre_paciente}'
-        )
-        os.makedirs(carpeta_paciente, exist_ok=True)
-        
-        # Guardar la imagen con un nombre específico
-        extension = os.path.splitext(imagen.name)[1]
-        nombre_archivo = f'odontograma{extension}'
-        ruta_relativa = os.path.join('odontogramas', f'odontograma-{nombre_paciente}', nombre_archivo)
-        
-        # Eliminar imagen anterior si existe
-        if odontograma.imagen:
-            ruta_anterior = os.path.join(settings.MEDIA_ROOT, str(odontograma.imagen))
-            if os.path.exists(ruta_anterior):
-                os.remove(ruta_anterior)
-        
-        # Guardar la nueva imagen
-        odontograma.imagen = ruta_relativa
-        with open(os.path.join(settings.MEDIA_ROOT, ruta_relativa), 'wb+') as destino:
-            for chunk in imagen.chunks():
-                destino.write(chunk)
-        
-        odontograma.save()
-        
-        serializer = self.get_serializer(odontograma)
-        return Response(serializer.data)
+        try:
+            odontograma = self.get_object()
+            imagen = request.FILES.get('imagen')
+            
+            if not imagen:
+                return Response({'error': 'No se proporcionó ninguna imagen'}, status=400)
+            
+            # Crear carpeta específica del paciente si no existe
+            nombre_paciente = odontograma.id_paciente.nombre.replace(' ', '_')
+            carpeta_paciente = os.path.join(
+                settings.MEDIA_ROOT,
+                'odontogramas',
+                f'odontograma-{nombre_paciente}'
+            )
+            os.makedirs(carpeta_paciente, exist_ok=True)
+            
+            # Guardar la imagen con un nombre específico
+            extension = os.path.splitext(imagen.name)[1]
+            nombre_archivo = f'odontograma{extension}'
+            ruta_relativa = os.path.join('odontogramas', f'odontograma-{nombre_paciente}', nombre_archivo)
+            
+            # Eliminar imagen anterior si existe
+            if odontograma.imagen:
+                ruta_anterior = os.path.join(settings.MEDIA_ROOT, str(odontograma.imagen))
+                if os.path.exists(ruta_anterior):
+                    try:
+                        os.remove(ruta_anterior)
+                    except Exception as e:
+                        print(f"No se pudo eliminar imagen anterior: {e}")
+            
+            # Guardar la nueva imagen
+            odontograma.imagen = ruta_relativa
+            with open(os.path.join(settings.MEDIA_ROOT, ruta_relativa), 'wb+') as destino:
+                for chunk in imagen.chunks():
+                    destino.write(chunk)
+            
+            odontograma.save()
+            
+            serializer = self.get_serializer(odontograma)
+            return Response({
+                'message': 'Imagen subida correctamente',
+                'odontograma': serializer.data
+            })
+        except Exception as e:
+            return Response({'error': f'Error al subir imagen: {str(e)}'}, status=400)
 
 
 class PiezaDentalViewSet(viewsets.ModelViewSet):
