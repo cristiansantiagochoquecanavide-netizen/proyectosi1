@@ -80,14 +80,14 @@ export default function Inventario() {
 
     setGuardando(true);
     try {
-      await actualizarInsumo(insumoEditando.id, {
+      await actualizarInsumo(insumoEditando.id_insumo, {
         nombre: insumoEditando.nombre,
         codigo: insumoEditando.codigo,
         descripcion: insumoEditando.descripcion,
         categoria: insumoEditando.categoria,
-        stock_actual: parseInt(insumoEditando.stock_actual) || 0,
-        stock_minimo: parseInt(insumoEditando.stock_minimo) || 0,
-        stock_maximo: parseInt(insumoEditando.stock_maximo) || 0,
+        stock_actual: parseFloat(insumoEditando.stock_actual) || 0,
+        stock_minimo: parseFloat(insumoEditando.stock_minimo) || 0,
+        stock_maximo: parseFloat(insumoEditando.stock_maximo) || 0,
         unidad_medida: insumoEditando.unidad_medida,
         precio_unitario: parseFloat(insumoEditando.precio_unitario) || 0,
       });
@@ -97,7 +97,8 @@ export default function Inventario() {
       await cargarInsumos();
     } catch (err) {
       console.error('Error al actualizar insumo:', err);
-      setError('Error al actualizar el insumo');
+      const errorMsg = err.response?.data?.detail || err.message || 'Error al actualizar el insumo';
+      setError(errorMsg);
     } finally {
       setGuardando(false);
     }
@@ -109,11 +110,13 @@ export default function Inventario() {
     }
 
     try {
+      setError('');
       await eliminarInsumo(id);
       await cargarInsumos();
     } catch (err) {
       console.error('Error al eliminar insumo:', err);
-      setError('Error al eliminar el insumo');
+      const errorMsg = err.response?.data?.detail || err.message || 'Error al eliminar el insumo';
+      setError(errorMsg);
     }
   };
 
@@ -214,7 +217,7 @@ export default function Inventario() {
               ) : (
                 insumosFiltrados.map((insumo) => (
                   <TableRow
-                    key={insumo.id}
+                    key={insumo.id_insumo}
                     hover
                     sx={{
                       bgcolor: necesitaReposicion(insumo) ? 'error.lighter' : 'inherit',
@@ -257,7 +260,7 @@ export default function Inventario() {
                         <IconButton
                           size="small"
                           color="error"
-                          onClick={() => handleEliminar(insumo.id)}
+                          onClick={() => handleEliminar(insumo.id_insumo)}
                           title="Eliminar insumo"
                         >
                           <DeleteIcon />
