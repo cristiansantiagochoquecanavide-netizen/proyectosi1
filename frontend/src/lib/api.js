@@ -155,3 +155,6 @@ export async function apiDelete(path) {
   }
   return true
 }
+
+// Exportar API_BASE_URL para uso en otros componentes
+export { API_BASE_URL }
