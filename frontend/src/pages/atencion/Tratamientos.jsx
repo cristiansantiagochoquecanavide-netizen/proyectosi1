@@ -26,14 +26,17 @@ import {
   Select,
   MenuItem,
   Autocomplete,
+  IconButton,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { apiGet } from '../../lib/api';
 import { useAuth } from '../../ui/AuthContext';
 import {
   listarTratamientosPorPaciente,
   crearTratamiento,
   actualizarTratamiento,
+  eliminarTratamiento,
 } from '../../lib/atencion';
 
 const ESTADOS_TRATAMIENTO = [
@@ -177,7 +180,21 @@ export default function Tratamientos() {
       cargarTratamientos(pacienteSeleccionado.id_paciente);
     } catch (err) {
       console.error('Error al actualizar estado:', err);
-      alert('Error al actualizar el estado');
+      setError('Error al actualizar el estado del tratamiento');
+    }
+  };
+
+  const handleEliminar = async (tratamientoId) => {
+    if (!window.confirm('¿Está seguro de eliminar este tratamiento? Esta acción no se puede deshacer.')) {
+      return;
+    }
+    
+    try {
+      await eliminarTratamiento(tratamientoId);
+      cargarTratamientos(pacienteSeleccionado.id_paciente);
+    } catch (err) {
+      console.error('Error al eliminar tratamiento:', err);
+      setError('Error al eliminar el tratamiento');
     }
   };
 
@@ -252,8 +269,8 @@ export default function Tratamientos() {
                 {tratamientos.map((tratamiento) => {
                   const estadoConfig = getEstadoConfig(tratamiento.estado);
                   return (
-                    <TableRow key={tratamiento.id} hover>
-                      <TableCell>{tratamiento.id}</TableCell>
+                    <TableRow key={tratamiento.id_tratamiento} hover>
+                      <TableCell>{tratamiento.id_tratamiento}</TableCell>
                       <TableCell>{tratamiento.nombre}</TableCell>
                       <TableCell>{tratamiento.descripcion?.substring(0, 50) || '-'}</TableCell>
                       <TableCell>{formatearMoneda(tratamiento.costo_estimado)}</TableCell>
@@ -267,20 +284,30 @@ export default function Tratamientos() {
                           : '-'}
                       </TableCell>
                       <TableCell align="center">
-                        {tratamiento.estado !== 'completado' && tratamiento.estado !== 'cancelado' && (
-                          <FormControl size="small" sx={{ minWidth: 120 }}>
-                            <Select
-                              value={tratamiento.estado}
-                              onChange={(e) => handleCambiarEstado(tratamiento.id, e.target.value)}
-                            >
-                              {ESTADOS_TRATAMIENTO.map((estado) => (
-                                <MenuItem key={estado.value} value={estado.value}>
-                                  {estado.label}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                        )}
+                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                          {tratamiento.estado !== 'completado' && tratamiento.estado !== 'cancelado' && (
+                            <FormControl size="small" sx={{ minWidth: 120 }}>
+                              <Select
+                                value={tratamiento.estado}
+                                onChange={(e) => handleCambiarEstado(tratamiento.id_tratamiento, e.target.value)}
+                              >
+                                {ESTADOS_TRATAMIENTO.map((estado) => (
+                                  <MenuItem key={estado.value} value={estado.value}>
+                                    {estado.label}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          )}
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => handleEliminar(tratamiento.id_tratamiento)}
+                            title="Eliminar tratamiento"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   );
