@@ -8,8 +8,15 @@ from pacientes.models import Paciente
 
 
 class ProcedimientoSerializer(serializers.ModelSerializer):
-    """Serializer para Procedimiento (CU12: Registrar procedimientos en atención)"""
-    paciente_nombre = serializers.CharField(source='id_atencion.id_paciente.nombre', read_only=True)
+    """
+    Serializer para Procedimiento (CU12: Registrar procedimientos en atención)
+    Incluye información del paciente a través de la relación con Atención
+    """
+    paciente_nombre = serializers.CharField(
+        source='id_atencion.id_paciente.nombre', 
+        read_only=True,
+        help_text='Nombre del paciente asociado a la atención'
+    )
     
     class Meta:
         model = Procedimiento
