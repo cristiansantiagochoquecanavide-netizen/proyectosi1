@@ -51,6 +51,7 @@ export default function Tratamientos() {
   const [pacientes, setPacientes] = useState([]);
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null);
   const [tratamientos, setTratamientos] = useState([]);
+  const [odontologoId, setOdontologoId] = useState(null);
 
   // Modal nuevo tratamiento
   const [openNuevo, setOpenNuevo] = useState(false);
@@ -64,7 +65,8 @@ export default function Tratamientos() {
 
   useEffect(() => {
     cargarPacientes();
-  }, []);
+    cargarOdontologo();
+  }, [user]);
 
   const cargarPacientes = async () => {
     try {
@@ -72,6 +74,25 @@ export default function Tratamientos() {
       setPacientes(data.results || data);
     } catch (err) {
       console.error('Error al cargar pacientes:', err);
+    }
+  };
+
+  const cargarOdontologo = async () => {
+    if (!user || !user.id_usuario) return;
+    
+    try {
+      // Buscar el odontólogo vinculado al usuario autenticado
+      const odontologos = await apiGet('/citas/api/odontologos/');
+      const odontologosData = odontologos.results || odontologos;
+      const odontologo = odontologosData.find(o => o.usuario_seguridad === user.id_usuario);
+      
+      if (odontologo) {
+        setOdontologoId(odontologo.id_odontologo);
+      } else {
+        console.warn('No se encontró odontólogo para este usuario');
+      }
+    } catch (err) {
+      console.error('Error al cargar odontólogo:', err);
     }
   };
 
@@ -117,8 +138,8 @@ export default function Tratamientos() {
       alert('Debe ingresar el nombre del tratamiento');
       return;
     }
-    if (!user || !user.id_odontologo) {
-      alert('No se pudo identificar al odontólogo');
+    if (!odontologoId) {
+      alert('No se pudo identificar al odontólogo. Por favor, recargue la página.');
       return;
     }
 
@@ -126,7 +147,7 @@ export default function Tratamientos() {
     try {
       await crearTratamiento({
         id_paciente: pacienteSeleccionado.id_paciente,
-        id_odontologo: user.id_odontologo,
+        id_odontologo: odontologoId,
         nombre: nuevoTratamiento.nombre,
         descripcion: nuevoTratamiento.descripcion,
         costo_estimado: parseFloat(nuevoTratamiento.costo_estimado) || 0,
