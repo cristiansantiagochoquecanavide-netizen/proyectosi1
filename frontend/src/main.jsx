@@ -25,6 +25,7 @@ import IniciarAtencion from './pages/atencion/IniciarAtencion.jsx'
 import ListadoAtenciones from './pages/atencion/ListadoAtenciones.jsx'
 import Odontograma from './pages/atencion/Odontograma.jsx'
 import Tratamientos from './pages/atencion/Tratamientos.jsx'
+import Procedimientos from './pages/atencion/Procedimientos.jsx'
 // Nuevos módulos - Inventario
 import NuevoInsumo from './pages/inventario/NuevoInsumo.jsx'
 import AlertasStock from './pages/inventario/AlertasStock.jsx'
@@ -60,6 +61,7 @@ const router = createBrowserRouter([
       { path: 'atencion', element: <RequireAuth><ListadoAtenciones /></RequireAuth> },
       { path: 'atencion/odontograma', element: <RequireAuth><Odontograma /></RequireAuth> },
       { path: 'atencion/tratamientos', element: <RequireAuth><Tratamientos /></RequireAuth> },
+      { path: 'atencion/procedimientos', element: <RequireAuth><Procedimientos /></RequireAuth> },
       { path: 'seguridad', element: <RequireAuth><Seguridad /></RequireAuth> },
   { path: 'seguridad/usuarios', element: <RequireAuth><Usuarios /></RequireAuth> },
   { path: 'seguridad/roles', element: <RequireAuth><Roles /></RequireAuth> },
