@@ -185,7 +185,7 @@ else:
         'http://localhost:5174',
         'http://127.0.0.1:5174',
         'https://proyectosi1-6bow.onrender.com',
-        'https://consultoriodental.onrender.com'
+        'https://consultoriodental-cgik.onrender.com'
     ]
 
 # CORS: configuración para permitir peticiones del frontend
@@ -200,7 +200,7 @@ else:
         'http://127.0.0.1:5173',
         'http://localhost:5174',
         'http://127.0.0.1:5174',
-        'https://consultoriodental.onrender.com'
+        'https://consultoriodental-cgik.onrender.com'
     ]
 
 # Permitir cookies en peticiones CORS (necesario para sesiones)
