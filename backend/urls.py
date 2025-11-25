@@ -19,6 +19,10 @@ from django.urls import path, include  # include permite enrutar hacia las apps
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import csrf_token
+from django.http import HttpResponse  # Importar HttpResponse para la vista básica
+
+def home(request):
+    return HttpResponse("Bienvenido a la página principal.")  # Vista básica para la raíz
 
 # Enrutamiento principal del proyecto.
 # - Deriva a las apps de dominio (citas, pacientes, seguridad).
@@ -33,6 +37,7 @@ urlpatterns = [  # Rutas a nivel de proyecto
     path('inventario/', include('inventario_y_compras.urls')),  # Incluye rutas de inventario (CU18-CU19)
     path('facturacion/', include('facturacion_y_compras.urls')),  # Incluye rutas de facturación (CU14)
     path('csrf/', csrf_token, name='csrf'),  # Endpoint para obtener cookie/token CSRF
+    path('', home, name='home'),  # Ruta para la página principal
 ]
 
 # Servir archivos de MEDIA en desarrollo
