@@ -18,6 +18,26 @@ export default defineConfig({
         changeOrigin: true, 
         secure: false 
       },
+      '/atencion': { 
+        target: 'http://127.0.0.1:8000', 
+        changeOrigin: true, 
+        secure: false 
+      },
+      '/inventario': { 
+        target: 'http://127.0.0.1:8000', 
+        changeOrigin: true, 
+        secure: false 
+      },
+      '/facturacion': { 
+        target: 'http://127.0.0.1:8000', 
+        changeOrigin: true, 
+        secure: false 
+      },
+      '/reportes': { 
+        target: 'http://127.0.0.1:8000', 
+        changeOrigin: true, 
+        secure: false 
+      },
       '/citas': { 
         target: 'http://127.0.0.1:8000', 
         changeOrigin: true, 

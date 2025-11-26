@@ -60,10 +60,11 @@ export default function ListadoAtenciones() {
   }, [filtroEstado, filtroPaciente]);
 
   const cargarDatos = async () => {
-    try {
-      setLoading(true);
-      setError('');
+    setLoading(true);
+    setError('');
 
+    // Cargar atenciones
+    try {
       let datos;
       if (filtroPaciente) {
         datos = await listarAtencionesPorPaciente(filtroPaciente);
@@ -79,16 +80,22 @@ export default function ListadoAtenciones() {
       }
 
       setAtenciones(atencionesData);
-
-      // Cargar pacientes para el filtro
-      const pacientesData = await apiGet('/pacientes/api/pacientes/');
-      setPacientes(pacientesData.results || pacientesData);
     } catch (err) {
       console.error('Error al cargar atenciones:', err);
       setError('Error al cargar las atenciones');
-    } finally {
-      setLoading(false);
+      setAtenciones([]);
     }
+
+    // Cargar pacientes para el filtro (no debe bloquear la tabla de atenciones)
+    try {
+      const pacientesData = await apiGet('/pacientes/api/pacientes/');
+      setPacientes(pacientesData.results || pacientesData);
+    } catch (err) {
+      console.error('Error al cargar pacientes para filtros de atenciones:', err);
+      // No mostramos error en UI para no confundir con las atenciones
+    }
+
+    setLoading(false);
   };
 
   const getEstadoColor = (estado) => {
