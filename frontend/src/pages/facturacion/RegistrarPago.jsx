@@ -51,7 +51,8 @@ export default function RegistrarPago() {
     setLoading(true);
     try {
       await registrarPago({
-        id_factura: facturaSeleccionada.id,
+        // El endpoint espera factura_id y la factura serializada expone id_factura
+        factura_id: facturaSeleccionada.id_factura,
         monto: parseFloat(formData.monto),
         metodo_pago: formData.metodo_pago,
         observaciones: formData.observaciones,
@@ -78,7 +79,9 @@ export default function RegistrarPago() {
               <Grid item xs={12}>
                 <Autocomplete
                   options={facturas}
-                  getOptionLabel={(f) => `Factura #${f.numero_factura} - ${f.nombre_paciente} - Bs. ${f.total}`}
+                  getOptionLabel={(f) =>
+                    f ? `Factura #${f.numero_factura} - ${f.paciente_nombre || ''} - Bs. ${f.total}` : ''
+                  }
                   value={facturaSeleccionada}
                   onChange={(e, v) => setFacturaSeleccionada(v)}
                   renderInput={(params) => <TextField {...params} label="Factura *" />}
