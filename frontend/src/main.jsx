@@ -37,6 +37,7 @@ import OrdenesCompra from './pages/inventario/OrdenesCompra.jsx'
 import GenerarFactura from './pages/facturacion/GenerarFactura.jsx'
 import RegistrarPago from './pages/facturacion/RegistrarPago.jsx'
 import Recibos from './pages/facturacion/Recibos.jsx'
+import HistorialComprobantesPagos from './pages/facturacion/HistorialComprobantesPagos.jsx'
 // Nuevos módulos - Disponibilidad
 import Disponibilidad from './pages/citas/Disponibilidad.jsx'
 import { AuthProvider } from './ui/AuthContext.jsx'
@@ -86,6 +87,7 @@ const router = createBrowserRouter([
       { path: 'facturacion/nueva', element: <RequireAuth><GenerarFactura /></RequireAuth> },
       { path: 'facturacion/pago', element: <RequireAuth><RegistrarPago /></RequireAuth> },
       { path: 'facturacion/recibos', element: <RequireAuth><Recibos /></RequireAuth> },
+      { path: 'facturacion/historial', element: <RequireAuth><HistorialComprobantesPagos /></RequireAuth> },
     ]
   }
 ])

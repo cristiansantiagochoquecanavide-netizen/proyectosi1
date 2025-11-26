@@ -2,6 +2,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
+from django.db.models import Sum, F, DecimalField
+from django.db.models.functions import Coalesce
 from decimal import Decimal
 from .models import (
     Factura, DetalleFactura, Pago, Recibo
@@ -130,6 +132,56 @@ class FacturaViewSet(viewsets.ModelViewSet):
             })
         except Exception as e:
             return Response({'error': str(e)}, status=400)
+    
+    @action(detail=False, methods=['get'])
+    def historial_comprobantes_pagos(self, request):
+        """
+        CU nuevo: Consultar comprobantes y pagos (backoffice)
+        Filtros soportados:
+        - fecha_desde, fecha_hasta (rango sobre fecha_emision)
+        - paciente_id
+        - estado (estado de la factura)
+
+        Devuelve facturas filtradas y totales agregados.
+        """
+        qs = self.queryset.select_related('id_paciente')
+
+        fecha_desde = request.query_params.get('fecha_desde')
+        fecha_hasta = request.query_params.get('fecha_hasta')
+        paciente_id = request.query_params.get('paciente_id')
+        estado = request.query_params.get('estado')
+
+        if fecha_desde:
+            qs = qs.filter(fecha_emision__date__gte=fecha_desde)
+        if fecha_hasta:
+            qs = qs.filter(fecha_emision__date__lte=fecha_hasta)
+        if paciente_id:
+            qs = qs.filter(id_paciente=paciente_id)
+        if estado:
+            qs = qs.filter(estado=estado)
+
+        facturas_serializadas = self.get_serializer(qs, many=True).data
+
+        # Totales agregados
+        agregados = qs.aggregate(
+            total_facturado=Coalesce(Sum('total'), Decimal('0.00')),
+            total_saldo_pendiente=Coalesce(Sum('saldo_pendiente'), Decimal('0.00')),
+        )
+
+        # Total pagado = total_facturado - saldo_pendiente
+        total_facturado = Decimal(str(agregados['total_facturado']))
+        total_saldo_pendiente = Decimal(str(agregados['total_saldo_pendiente']))
+        total_pagado = total_facturado - total_saldo_pendiente
+
+        return Response({
+            'resultados': facturas_serializadas,
+            'totales': {
+                'total_facturado': str(total_facturado),
+                'total_pagado': str(total_pagado),
+                'total_saldo_pendiente': str(total_saldo_pendiente),
+                'cantidad_comprobantes': qs.count(),
+            }
+        })
     
     @action(detail=False, methods=['get'])
     def pendientes(self, request):

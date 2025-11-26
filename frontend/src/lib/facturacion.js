@@ -35,6 +35,19 @@ export async function listarFacturasPendientes() {
   return apiGet('/facturacion/facturas/pendientes/')
 }
 
+export async function historialComprobantesPagos(params = {}) {
+  const query = new URLSearchParams()
+  if (params.fecha_desde) query.append('fecha_desde', params.fecha_desde)
+  if (params.fecha_hasta) query.append('fecha_hasta', params.fecha_hasta)
+  if (params.paciente_id) query.append('paciente_id', params.paciente_id)
+  if (params.estado) query.append('estado', params.estado)
+  const qs = query.toString()
+  const url = qs
+    ? `/facturacion/facturas/historial_comprobantes_pagos/?${qs}`
+    : '/facturacion/facturas/historial_comprobantes_pagos/'
+  return apiGet(url)
+}
+
 export async function listarFacturasPorPaciente(pacienteId) {
   return apiGet(`/facturacion/facturas/por_paciente/?paciente_id=${pacienteId}`)
 }
