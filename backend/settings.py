@@ -221,3 +221,21 @@ else:
     # En desarrollo local (mismo dominio), configuración por defecto
     SESSION_COOKIE_SAMESITE = 'Lax'
     CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Agregar validación para CSRF y CORS en producción
+CSRF_TRUSTED_ORIGINS = [
+    'https://proyectosi1-6bow.onrender.com',
+    'https://consultoriodental-cgik.onrender.com'
+]
+
+CORS_ALLOWED_ORIGINS = [
+    'https://proyectosi1-6bow.onrender.com',
+    'https://consultoriodental-cgik.onrender.com'
+]
+
+# Manejo de cookies en producción
+SESSION_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = False
