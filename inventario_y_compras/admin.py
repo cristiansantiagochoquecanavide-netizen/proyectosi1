@@ -4,8 +4,8 @@ from .models import Proveedor, Almacen, Insumo, MovimientoInventario, OrdenCompr
 
 @admin.register(Proveedor)
 class ProveedorAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'nit', 'telefono', 'email', 'estado')
-    search_fields = ('nombre', 'nit', 'email')
+    list_display = ('nombre', 'nit', 'telefono', 'email', 'direccion', 'estado')
+    search_fields = ('nombre', 'nit', 'email', 'direccion')
     list_filter = ('estado',)
 
 @admin.register(Almacen)

@@ -71,7 +71,6 @@ export default function Proveedores() {
       telefono: '',
       email: '',
       direccion: '',
-      contacto: '',
     });
     setError('');
     setDialogOpen(true);
@@ -158,25 +157,27 @@ export default function Proveedores() {
                 <TableCell>NIT</TableCell>
                 <TableCell>Teléfono</TableCell>
                 <TableCell>Email</TableCell>
+                <TableCell>Dirección</TableCell>
                 <TableCell>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {proveedores.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">
+                  <TableCell colSpan={7} align="center">
                     No hay proveedores registrados.
                   </TableCell>
                 </TableRow>
               ) : (
                 proveedores.map((prov) => (
-                    <TableRow key={prov.id_proveedor} hover>
-                      <TableCell>{prov.id_proveedor}</TableCell>
-                      <TableCell>{prov.nombre}</TableCell>
-                      <TableCell>{prov.nit}</TableCell>
-                      <TableCell>{prov.telefono}</TableCell>
-                      <TableCell>{prov.email}</TableCell>
-                      <TableCell>
+                  <TableRow key={prov.id_proveedor} hover>
+                    <TableCell>{prov.id_proveedor}</TableCell>
+                    <TableCell>{prov.nombre}</TableCell>
+                    <TableCell>{prov.nit}</TableCell>
+                    <TableCell>{prov.telefono}</TableCell>
+                    <TableCell>{prov.email}</TableCell>
+                    <TableCell>{prov.direccion}</TableCell>
+                    <TableCell>
                       <IconButton
                         size="small"
                         color="primary"
@@ -259,3 +260,4 @@ export default function Proveedores() {
     </Box>
   );
 }
+
