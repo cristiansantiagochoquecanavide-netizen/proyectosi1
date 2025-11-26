@@ -1,11 +1,13 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    InsumoViewSet, MovimientoInventarioViewSet,
+    ProveedorViewSet, AlmacenViewSet, InsumoViewSet, MovimientoInventarioViewSet,
     OrdenCompraViewSet, DetalleOrdenCompraViewSet
 )
 
 router = DefaultRouter()
+router.register(r'proveedores', ProveedorViewSet, basename='proveedor')
+router.register(r'almacenes', AlmacenViewSet, basename='almacen')
 router.register(r'insumos', InsumoViewSet, basename='insumo')
 router.register(r'movimientos', MovimientoInventarioViewSet, basename='movimiento')
 router.register(r'ordenes-compra', OrdenCompraViewSet, basename='orden-compra')

@@ -3,13 +3,88 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from decimal import Decimal
+from django.db import IntegrityError
 from .models import (
-    Insumo, MovimientoInventario, OrdenCompra, DetalleOrdenCompra
+    Proveedor, Almacen, Insumo, MovimientoInventario, OrdenCompra, DetalleOrdenCompra
 )
 from .serializers import (
-    InsumoSerializer, MovimientoInventarioSerializer,
+    ProveedorSerializer, AlmacenSerializer, InsumoSerializer, MovimientoInventarioSerializer,
     OrdenCompraSerializer, DetalleOrdenCompraSerializer
 )
+
+
+class ProveedorViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para Proveedor (CU20: Gestionar proveedores)
+    Permite al administrador registrar y actualizar información de proveedores.
+    """
+    queryset = Proveedor.objects.all()
+    serializer_class = ProveedorSerializer
+    lookup_field = 'id_proveedor'
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            self.perform_create(serializer)
+        except IntegrityError:
+            return Response(
+                {'detail': 'Ya existe un proveedor con ese NIT.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        try:
+            self.perform_update(serializer)
+        except IntegrityError:
+            return Response(
+                {'detail': 'Ya existe un proveedor con ese NIT.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(serializer.data)
+
+
+class AlmacenViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para Almacen (CU21: Gestionar almacenes)
+    Permite registrar y actualizar almacenes físicos de insumos.
+    """
+    queryset = Almacen.objects.all()
+    serializer_class = AlmacenSerializer
+    lookup_field = 'id_almacen'
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            self.perform_create(serializer)
+        except IntegrityError:
+            return Response(
+                {'detail': 'Ya existe un almacén con ese nombre.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        try:
+            self.perform_update(serializer)
+        except IntegrityError:
+            return Response(
+                {'detail': 'Ya existe un almacén con ese nombre.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(serializer.data)
 
 
 class InsumoViewSet(viewsets.ModelViewSet):

@@ -1,8 +1,31 @@
 from rest_framework import serializers
 from .models import (
-    Insumo, MovimientoInventario, OrdenCompra, DetalleOrdenCompra
+    Proveedor, Almacen, Insumo, MovimientoInventario, OrdenCompra, DetalleOrdenCompra
 )
 from decimal import Decimal
+
+
+class ProveedorSerializer(serializers.ModelSerializer):
+    """Serializer para Proveedor (CU20: Gestionar proveedores)"""
+    class Meta:
+        model = Proveedor
+        fields = [
+            'id_proveedor', 'nombre', 'nit', 'telefono',
+            'email', 'direccion', 'estado',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id_proveedor', 'created_at', 'updated_at']
+
+
+class AlmacenSerializer(serializers.ModelSerializer):
+    """Serializer para Almacen (CU21: Gestionar almacenes)"""
+    class Meta:
+        model = Almacen
+        fields = [
+            'id_almacen', 'nombre', 'ubicacion', 'estado',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id_almacen', 'created_at', 'updated_at']
 
 
 class InsumoSerializer(serializers.ModelSerializer):

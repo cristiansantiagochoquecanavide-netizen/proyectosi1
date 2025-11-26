@@ -3,6 +3,57 @@ from django.utils import timezone
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 
+
+class Proveedor(models.Model):
+    """
+    CU20: Gestionar proveedores
+    - Registro de proveedores de insumos odontológicos.
+    """
+    id_proveedor = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=255)
+    nit = models.CharField(max_length=50, unique=True)
+    telefono = models.CharField(max_length=50, blank=True)
+    email = models.EmailField(max_length=255, blank=True)
+    direccion = models.CharField(max_length=255, blank=True)
+    estado = models.CharField(max_length=50, choices=[
+        ('activo', 'Activo'),
+        ('inactivo', 'Inactivo'),
+    ], default='activo')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['nombre']
+        verbose_name = 'Proveedor'
+        verbose_name_plural = 'Proveedores'
+
+    def __str__(self):
+        return f"{self.nombre} ({self.nit})"
+
+
+class Almacen(models.Model):
+    """
+    CU21: Gestionar almacenes
+    - Almacenes físicos donde se guardan los insumos.
+    """
+    id_almacen = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=255, unique=True)
+    ubicacion = models.CharField(max_length=255, blank=True)
+    estado = models.CharField(max_length=50, choices=[
+        ('activo', 'Activo'),
+        ('inactivo', 'Inactivo'),
+    ], default='activo')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['nombre']
+        verbose_name = 'Almacén'
+        verbose_name_plural = 'Almacenes'
+
+    def __str__(self):
+        return self.nombre
+
 # CU18: Gestionar insumos
 # - Catálogo de insumos odontológicos (materiales, medicamentos, instrumentos)
 class Insumo(models.Model):

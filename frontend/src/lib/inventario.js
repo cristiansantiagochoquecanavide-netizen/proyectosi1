@@ -3,6 +3,54 @@
 import { apiGet, apiPost, apiPut, apiDelete } from './api'
 
 // ============================================
+// PROVEEDORES (CU20: Gestionar proveedores)
+// ============================================
+
+export async function listarProveedores() {
+  return apiGet('/inventario/proveedores/')
+}
+
+export async function obtenerProveedor(id) {
+  return apiGet(`/inventario/proveedores/${id}/`)
+}
+
+export async function crearProveedor(data) {
+  return apiPost('/inventario/proveedores/', data)
+}
+
+export async function actualizarProveedor(id, data) {
+  return apiPut(`/inventario/proveedores/${id}/`, data)
+}
+
+export async function eliminarProveedor(id) {
+  return apiDelete(`/inventario/proveedores/${id}/`)
+}
+
+// ============================================
+// ALMACENES (CU21: Gestionar almacenes)
+// ============================================
+
+export async function listarAlmacenes() {
+  return apiGet('/inventario/almacenes/')
+}
+
+export async function obtenerAlmacen(id) {
+  return apiGet(`/inventario/almacenes/${id}/`)
+}
+
+export async function crearAlmacen(data) {
+  return apiPost('/inventario/almacenes/', data)
+}
+
+export async function actualizarAlmacen(id, data) {
+  return apiPut(`/inventario/almacenes/${id}/`, data)
+}
+
+export async function eliminarAlmacen(id) {
+  return apiDelete(`/inventario/almacenes/${id}/`)
+}
+
+// ============================================
 // INSUMOS (CU18: Registrar y gestionar insumos)
 // ============================================
 

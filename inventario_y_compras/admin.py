@@ -1,7 +1,18 @@
 from django.contrib import admin
-from .models import (
-    Insumo, MovimientoInventario, OrdenCompra, DetalleOrdenCompra
-)
+from .models import Proveedor, Almacen, Insumo, MovimientoInventario, OrdenCompra, DetalleOrdenCompra
+
+
+@admin.register(Proveedor)
+class ProveedorAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'nit', 'telefono', 'email', 'estado')
+    search_fields = ('nombre', 'nit', 'email')
+    list_filter = ('estado',)
+
+@admin.register(Almacen)
+class AlmacenAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'ubicacion', 'estado')
+    search_fields = ('nombre', 'ubicacion')
+    list_filter = ('estado',)
 
 @admin.register(Insumo)
 class InsumoAdmin(admin.ModelAdmin):

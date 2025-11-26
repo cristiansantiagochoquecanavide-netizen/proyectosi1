@@ -145,3 +145,8 @@ export async function listarRecibosPorPaciente(pacienteId) {
 export async function obtenerReciboPorPago(pagoId) {
   return apiGet(`/facturacion/recibos/por_pago/?pago_id=${pagoId}`)
 }
+
+// CU17: Mis comprobantes y pagos (paciente)
+export async function listarMisComprobantes() {
+  return apiGet('/facturacion/recibos/mis_comprobantes/')
+}

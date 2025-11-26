@@ -11,6 +11,7 @@ from .models import (
 from .serializers import (
     FacturaSerializer, DetalleFacturaSerializer, PagoSerializer, ReciboSerializer
 )
+from seguridad_y_personal.models import Usuario
 
 
 class FacturaViewSet(viewsets.ModelViewSet):
@@ -136,7 +137,7 @@ class FacturaViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def historial_comprobantes_pagos(self, request):
         """
-        CU nuevo: Consultar comprobantes y pagos (backoffice)
+        CU16 nuevo: Consultar comprobantes y pagos (backoffice)
         Filtros soportados:
         - fecha_desde, fecha_hasta (rango sobre fecha_emision)
         - paciente_id
@@ -317,5 +318,32 @@ class ReciboViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Se requiere paciente_id'}, status=400)
         
         recibos = self.queryset.filter(id_paciente=paciente_id)
+        serializer = self.get_serializer(recibos, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def mis_comprobantes(self, request):
+        """
+        CU17: Mis comprobantes y pagos (paciente)
+        Usa la sesión de seguridad_y_personal para obtener el usuario actual
+        y devuelve todos los recibos asociados a su paciente, si existe.
+        """
+        user_id = request.session.get('usuario_id')
+        if not user_id:
+            return Response({'detail': 'No autenticado'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            usuario = Usuario.objects.get(pk=user_id)
+        except Usuario.DoesNotExist:
+            return Response({'detail': 'Usuario no encontrado'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Buscamos paciente por correo (asumiendo que el correo coincide)
+        from pacientes.models import Paciente
+        paciente = Paciente.objects.filter(email__iexact=usuario.correo).first()
+        if not paciente:
+            # Si no hay paciente vinculado, devolver lista vacía (no es error de servidor)
+            return Response([], status=status.HTTP_200_OK)
+
+        recibos = self.queryset.filter(id_paciente=paciente)
         serializer = self.get_serializer(recibos, many=True)
         return Response(serializer.data)

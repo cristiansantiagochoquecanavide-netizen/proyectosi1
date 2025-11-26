@@ -33,11 +33,14 @@ import NuevoInsumo from './pages/inventario/NuevoInsumo.jsx'
 import AlertasStock from './pages/inventario/AlertasStock.jsx'
 import Movimientos from './pages/inventario/Movimientos.jsx'
 import OrdenesCompra from './pages/inventario/OrdenesCompra.jsx'
+import Proveedores from './pages/inventario/Proveedores.jsx'
+import Almacenes from './pages/inventario/Almacenes.jsx'
 // Nuevos módulos - Facturación
 import GenerarFactura from './pages/facturacion/GenerarFactura.jsx'
 import RegistrarPago from './pages/facturacion/RegistrarPago.jsx'
 import Recibos from './pages/facturacion/Recibos.jsx'
 import HistorialComprobantesPagos from './pages/facturacion/HistorialComprobantesPagos.jsx'
+import MisComprobantes from './pages/facturacion/MisComprobantes.jsx'
 // Nuevos módulos - Disponibilidad
 import Disponibilidad from './pages/citas/Disponibilidad.jsx'
 import { AuthProvider } from './ui/AuthContext.jsx'
@@ -82,12 +85,15 @@ const router = createBrowserRouter([
       { path: 'inventario/alertas', element: <RequireAuth><AlertasStock /></RequireAuth> },
       { path: 'inventario/movimientos', element: <RequireAuth><Movimientos /></RequireAuth> },
       { path: 'inventario/ordenes', element: <RequireAuth><OrdenesCompra /></RequireAuth> },
+      { path: 'inventario/proveedores', element: <RequireAuth><Proveedores /></RequireAuth> },
+      { path: 'inventario/almacenes', element: <RequireAuth><Almacenes /></RequireAuth> },
       // Rutas de Facturación
       { path: 'facturacion', element: <RequireAuth><Facturacion /></RequireAuth> },
       { path: 'facturacion/nueva', element: <RequireAuth><GenerarFactura /></RequireAuth> },
       { path: 'facturacion/pago', element: <RequireAuth><RegistrarPago /></RequireAuth> },
       { path: 'facturacion/recibos', element: <RequireAuth><Recibos /></RequireAuth> },
       { path: 'facturacion/historial', element: <RequireAuth><HistorialComprobantesPagos /></RequireAuth> },
+      { path: 'facturacion/mis-comprobantes', element: <RequireAuth><MisComprobantes /></RequireAuth> },
     ]
   }
 ])

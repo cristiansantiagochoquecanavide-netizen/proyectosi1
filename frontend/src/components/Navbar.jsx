@@ -11,7 +11,6 @@ import {
   ListItemIcon,
   ListItemText,
   Box,
-  Button,
   Divider,
   Collapse,
 } from '@mui/material';
@@ -71,6 +70,8 @@ const menuItems = [
       { text: 'Alertas Stock', path: '/inventario/alertas' },
       { text: 'Movimientos', path: '/inventario/movimientos' },
       { text: 'Órdenes de Compra', path: '/inventario/ordenes' },
+      { text: 'Almacenes', path: '/inventario/almacenes' },
+      { text: 'Proveedores', path: '/inventario/proveedores' },
     ],
   },
   {
@@ -80,6 +81,7 @@ const menuItems = [
       { text: 'Listado Facturas', path: '/facturacion' },
       { text: 'Generar Factura', path: '/facturacion/nueva' },
       { text: 'Registrar Pago', path: '/facturacion/pago' },
+      { text: 'Mis comprobantes', path: '/facturacion/mis-comprobantes' },
       { text: 'Historial Comprobantes y Pagos', path: '/facturacion/historial' },
       { text: 'Recibos', path: '/facturacion/recibos' },
     ],
@@ -103,7 +105,6 @@ export default function Navbar({ user, onLogout }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
   const navigate = useNavigate();
-  const isMobile = true; // siempre hamburguesa en este diseño
 
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);
@@ -212,21 +213,19 @@ export default function Navbar({ user, onLogout }) {
     <>
       <AppBar position="fixed" elevation={2}>
         <Toolbar>
-          {isMobile && (
-            <IconButton
-              color="inherit"
-              aria-label="abrir menú"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2 }}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
+          <IconButton
+            color="inherit"
+            aria-label="abrir menú"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ mr: 2 }}
+          >
+            <MenuIcon />
+          </IconButton>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
             <Typography
-              variant={isMobile ? 'h6' : 'h5'}
+              variant="h6"
               noWrap
               sx={{ cursor: 'pointer' }}
               onClick={() => handleNavigation('/')}
