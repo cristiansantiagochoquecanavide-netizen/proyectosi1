@@ -54,7 +54,8 @@ export default function GenerarFactura() {
   const handlePacienteChange = (event, newValue) => {
     setPacienteSeleccionado(newValue);
     if (newValue && modo === 'desde_atencion') {
-      cargarAtenciones(newValue.id);
+      // En la API, el identificador del paciente es id_paciente
+      cargarAtenciones(newValue.id_paciente);
     }
   };
 
@@ -66,7 +67,8 @@ export default function GenerarFactura() {
     setLoading(true);
     try {
       await crearFactura({
-        id_paciente: pacienteSeleccionado.id,
+        // El backend espera el campo id_paciente (PK real del modelo)
+        id_paciente: pacienteSeleccionado.id_paciente,
         observaciones: observaciones,
       });
       navigate('/facturacion');
@@ -85,7 +87,8 @@ export default function GenerarFactura() {
     setLoading(true);
     try {
       await generarFacturaDesdeAtencion({
-        atencion_id: atencionSeleccionada.id,
+        // La atención usa id_atencion como PK en la API
+        atencion_id: atencionSeleccionada.id_atencion,
         incluir_insumos: true,
       });
       navigate('/facturacion');
