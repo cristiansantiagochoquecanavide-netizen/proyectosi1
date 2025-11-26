@@ -59,15 +59,15 @@ export default function Recibos() {
             </TableHead>
             <TableBody>
               {recibos.map((recibo) => (
-                <TableRow key={recibo.id} hover>
+                <TableRow key={recibo.id_recibo} hover>
                   <TableCell>{recibo.numero_recibo}</TableCell>
                   <TableCell>
                     {new Date(recibo.fecha_emision).toLocaleDateString('es-BO')}
                   </TableCell>
-                  <TableCell>{recibo.nombre_paciente}</TableCell>
+                  <TableCell>{recibo.paciente_nombre}</TableCell>
                   <TableCell>{recibo.metodo_pago}</TableCell>
                   <TableCell align="right">
-                    Bs. {parseFloat(recibo.monto_pagado || 0).toFixed(2)}
+                    Bs. {parseFloat(recibo.pago_monto || 0).toFixed(2)}
                   </TableCell>
                   <TableCell align="center">
                     <IconButton size="small" color="primary">

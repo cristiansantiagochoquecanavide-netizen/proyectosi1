@@ -56,11 +56,13 @@ class ReciboSerializer(serializers.ModelSerializer):
     """Serializer para Recibo"""
     pago_monto = serializers.DecimalField(source='id_pago.monto', max_digits=10, decimal_places=2, read_only=True)
     paciente_nombre = serializers.CharField(source='id_paciente.nombre', read_only=True)
+    metodo_pago = serializers.CharField(source='id_pago.metodo_pago', read_only=True)
     
     class Meta:
         model = Recibo
         fields = [
             'id_recibo', 'numero_recibo', 'id_pago', 'id_paciente',
-            'fecha_emision', 'observaciones', 'pago_monto', 'paciente_nombre'
+            'fecha_emision', 'observaciones', 'pago_monto',
+            'paciente_nombre', 'metodo_pago'
         ]
         read_only_fields = ['id_recibo']
