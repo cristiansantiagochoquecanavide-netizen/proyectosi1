@@ -9,7 +9,13 @@ from decimal import Decimal
 class Factura(models.Model):
     id_factura = models.AutoField(primary_key=True)
     numero_factura = models.CharField(max_length=50, unique=True)  # Número correlativo de factura
-    id_atencion = models.OneToOneField('atencion.Atencion', on_delete=models.CASCADE, related_name='factura')
+    id_atencion = models.OneToOneField(
+        'atencion.Atencion',
+        on_delete=models.CASCADE,
+        related_name='factura',
+        null=True,
+        blank=True
+    )
     id_paciente = models.ForeignKey('pacientes.Paciente', on_delete=models.CASCADE, related_name='facturas')
     
     fecha_emision = models.DateTimeField(default=timezone.now)

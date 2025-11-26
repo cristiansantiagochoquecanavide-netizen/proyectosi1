@@ -31,6 +31,10 @@ class FacturaSerializer(serializers.ModelSerializer):
             'detalles', 'paciente_nombre', 'emitida_por_nombre'
         ]
         read_only_fields = ['id_factura', 'saldo_pendiente', 'created_at', 'updated_at']
+        extra_kwargs = {
+            'id_atencion': {'required': False, 'allow_null': True},
+            'numero_factura': {'required': False},
+        }
 
 
 class PagoSerializer(serializers.ModelSerializer):

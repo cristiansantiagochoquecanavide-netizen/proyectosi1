@@ -18,6 +18,34 @@ class FacturaViewSet(viewsets.ModelViewSet):
     queryset = Factura.objects.all()
     serializer_class = FacturaSerializer
     
+    def _generar_numero_factura(self):
+        """Obtiene el siguiente correlativo de factura usando el prefijo FAC-."""
+        ultima_factura = Factura.objects.order_by('-id_factura').first()
+        if not ultima_factura:
+            return "FAC-000001"
+        try:
+            ultimo_numero = int(str(ultima_factura.numero_factura).split('-')[1])
+        except (IndexError, ValueError):
+            ultimo_numero = ultima_factura.id_factura
+        return f"FAC-{ultimo_numero + 1:06d}"
+
+    def create(self, request, *args, **kwargs):
+        """Crea facturas manuales generando número y permitiendo atenciones opcionales."""
+        data = request.data.copy()
+        data.setdefault('numero_factura', self._generar_numero_factura())
+        data.setdefault('estado', 'emitida')
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        # Asegurar totales coherentes incluso si viene sin detalles
+        serializer.instance.calcular_total()
+        serializer.instance.refresh_from_db()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
     @action(detail=False, methods=['post'])
     def generar_desde_atencion(self, request):
         """Genera una factura automáticamente desde una atención"""
@@ -38,14 +66,9 @@ class FacturaViewSet(viewsets.ModelViewSet):
             except Factura.DoesNotExist:
                 pass  # No existe, continuar con la creación
             
-            # Generar número de factura
-            ultima_factura = Factura.objects.order_by('-id_factura').first()
-            numero = 1 if not ultima_factura else int(ultima_factura.numero_factura.split('-')[1]) + 1
-            numero_factura = f"FAC-{numero:06d}"
-            
             # Crear factura
             factura = Factura.objects.create(
-                numero_factura=numero_factura,
+                numero_factura=self._generar_numero_factura(),
                 id_atencion=atencion,
                 id_paciente=atencion.id_paciente,
                 estado='emitida',
