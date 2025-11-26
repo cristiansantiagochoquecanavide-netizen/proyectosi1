@@ -3,12 +3,23 @@ from .models import (
     Factura, DetalleFactura, Pago, Recibo
 )
 
+
 @admin.register(Factura)
 class FacturaAdmin(admin.ModelAdmin):
     list_display = ('numero_factura', 'id_paciente', 'fecha_emision', 'estado', 'total', 'saldo_pendiente')
     list_filter = ('estado', 'fecha_emision', 'metodo_pago')
     search_fields = ('numero_factura', 'id_paciente__nombre')
     date_hierarchy = 'fecha_emision'
+
+    def delete_model(self, request, obj):
+        # Asegura que los pagos asociados se eliminen al borrar una factura desde el admin
+        Pago.objects.filter(id_factura=obj).delete()
+        super().delete_model(request, obj)
+
+    def delete_queryset(self, request, queryset):
+        # Maneja el borrado masivo desde la acción "Eliminar seleccionados"
+        Pago.objects.filter(id_factura__in=queryset).delete()
+        super().delete_queryset(request, queryset)
 
 @admin.register(DetalleFactura)
 class DetalleFacturaAdmin(admin.ModelAdmin):
