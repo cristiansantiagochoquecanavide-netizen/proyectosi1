@@ -20,8 +20,9 @@ import {
   CardContent,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from 'react-router-dom';
-import { listarFacturas } from '../../lib/facturacion';
+import { listarFacturas, eliminarFactura } from '../../lib/facturacion';
 
 const ESTADOS = {
   borrador: { label: 'Borrador', color: 'default' },
@@ -55,6 +56,18 @@ export default function Facturacion() {
   const facturasFiltradas = filtroEstado
     ? facturas.filter((f) => f.estado === filtroEstado)
     : facturas;
+
+  const handleEliminar = async (factura) => {
+    const ok = window.confirm(`¿Eliminar la factura ${factura.numero_factura}?`);
+    if (!ok) return;
+    try {
+      await eliminarFactura(factura.id_factura);
+      await cargarFacturas();
+    } catch (err) {
+      console.error('Error al eliminar factura:', err);
+      alert('No se pudo eliminar la factura.');
+    }
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -99,6 +112,7 @@ export default function Facturacion() {
                 <TableCell>Paciente</TableCell>
                 <TableCell>Estado</TableCell>
                 <TableCell align="right">Total</TableCell>
+                <TableCell align="center">Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -116,6 +130,16 @@ export default function Facturacion() {
                     </TableCell>
                     <TableCell align="right">
                       Bs. {parseFloat(factura.total || 0).toFixed(2)}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Button
+                        size="small"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => handleEliminar(factura)}
+                      >
+                        Eliminar
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );
