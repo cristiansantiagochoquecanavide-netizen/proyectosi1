@@ -123,7 +123,7 @@ export default function GenerarFactura() {
             <Grid item xs={12}>
               <Autocomplete
                 options={pacientes}
-                getOptionLabel={(p) => `${p.nombre} ${p.apellido_paterno}`}
+                getOptionLabel={(p) => (p ? p.nombre : '')}
                 value={pacienteSeleccionado}
                 onChange={handlePacienteChange}
                 renderInput={(params) => <TextField {...params} label="Paciente *" />}
@@ -134,7 +134,9 @@ export default function GenerarFactura() {
               <Grid item xs={12}>
                 <Autocomplete
                   options={atenciones}
-                  getOptionLabel={(a) => `Atención #${a.id} - ${a.motivo_consulta}`}
+                  getOptionLabel={(a) =>
+                    a ? `Atención #${a.id_atencion} - ${a.observaciones_generales || ''}` : ''
+                  }
                   value={atencionSeleccionada}
                   onChange={(e, v) => setAtencionSeleccionada(v)}
                   renderInput={(params) => <TextField {...params} label="Atención *" />}
