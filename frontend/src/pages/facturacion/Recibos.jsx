@@ -10,10 +10,10 @@ import {
   TableRow,
   Paper,
   CircularProgress,
-  IconButton,
+  Button,
 } from '@mui/material';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import { listarRecibos } from '../../lib/facturacion';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { listarRecibos, eliminarRecibo } from '../../lib/facturacion';
 
 export default function Recibos() {
   const [recibos, setRecibos] = useState([]);
@@ -31,6 +31,18 @@ export default function Recibos() {
       console.error('Error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEliminar = async (recibo) => {
+    const ok = window.confirm(`¿Eliminar el recibo ${recibo.numero_recibo}?`);
+    if (!ok) return;
+    try {
+      await eliminarRecibo(recibo.id_recibo);
+      await cargarRecibos();
+    } catch (err) {
+      console.error('Error al eliminar recibo:', err);
+      alert('No se pudo eliminar el recibo.');
     }
   };
 
@@ -70,9 +82,14 @@ export default function Recibos() {
                     Bs. {parseFloat(recibo.pago_monto || 0).toFixed(2)}
                   </TableCell>
                   <TableCell align="center">
-                    <IconButton size="small" color="primary">
-                      <VisibilityIcon />
-                    </IconButton>
+                    <Button
+                      size="small"
+                      color="error"
+                      startIcon={<DeleteIcon />}
+                      onClick={() => handleEliminar(recibo)}
+                    >
+                      Eliminar
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
