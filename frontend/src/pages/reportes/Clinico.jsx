@@ -2,138 +2,137 @@ import React, { useState, useEffect } from 'react';
 import {
   Container,
   Paper,
-  TextField,
-  Button,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Grid,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Card,
-  CardContent,
   CircularProgress,
   Alert,
   Box,
+  Tabs,
+  Tab,
+  Card,
+  CardContent,
+  Typography,
+  Chip,
+  Button,
+  Menu,
+  MenuItem,
 } from '@mui/material';
-import { listarReportesClinico, generarReporteClinico, descargarReporteClinico } from '../../lib/reportes';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import { apiGet } from '../../lib/api';
 
 export default function ReportesClinico() {
-  const [reportes, setReportes] = useState([]);
+  const [citas, setCitas] = useState([]);
+  const [atenciones, setAtenciones] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [openDetalle, setOpenDetalle] = useState(false);
-  const [reporteSeleccionado, setReporteSeleccionado] = useState(null);
   const [error, setError] = useState(null);
-  const [filtros, setFiltros] = useState({
-    id_odontologo: '',
-  });
-  const [formData, setFormData] = useState({
-    titulo: 'Reporte Clínico',
-    fecha_inicio: '',
-    fecha_fin: '',
-    id_odontologo: '',
-  });
+  const [tabValue, setTabValue] = useState(0);
+  const [anchorCitasEl, setAnchorCitasEl] = useState(null);
+  const [anchorAtencionesEl, setAnchorAtencionesEl] = useState(null);
+  const [descargando, setDescargando] = useState(false);
 
   useEffect(() => {
-    cargarReportes();
+    cargarDatos();
   }, []);
 
-  const cargarReportes = async () => {
+  const cargarDatos = async () => {
     setLoading(true);
     try {
-      const response = await listarReportesClinico();
-      setReportes(response);
+      // Cargar citas
+      const citasResponse = await apiGet('/citas/api/citas/');
+      setCitas(Array.isArray(citasResponse.results) ? citasResponse.results : citasResponse);
+
+      // Cargar atenciones
+      const atencionesResponse = await apiGet('/atencion/atenciones/');
+      setAtenciones(Array.isArray(atencionesResponse.results) ? atencionesResponse.results : atencionesResponse);
+
       setError(null);
     } catch (err) {
-      setError('Error al cargar reportes clínicos');
+      setError('Error al cargar datos clínicos');
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGenerarReporte = async () => {
-    if (!formData.fecha_inicio || !formData.fecha_fin) {
-      setError('Debe completar las fechas');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const datos = {
-        titulo: formData.titulo,
-        fecha_inicio: formData.fecha_inicio,
-        fecha_fin: formData.fecha_fin,
-        id_odontologo: formData.id_odontologo ? parseInt(formData.id_odontologo) : null,
-      };
-
-      const response = await generarReporteClinico(datos);
-      setReportes([response, ...reportes]);
-      setOpenDialog(false);
-      setFormData({
-        titulo: 'Reporte Clínico',
-        fecha_inicio: '',
-        fecha_fin: '',
-        id_odontologo: '',
-      });
-      setError(null);
-    } catch (err) {
-      setError(err.message || 'Error al generar reporte clínico');
-    } finally {
-      setLoading(false);
-    }
+  const getColorEstado = (estado) => {
+    const colores = {
+      'pendiente': 'default',
+      'confirmada': 'primary',
+      'programada': 'info',
+      'cancelada': 'error',
+      'en_curso': 'warning',
+      'finalizada': 'success',
+    };
+    return colores[estado] || 'default';
   };
 
-  const handleDescargar = async (reporte) => {
+  const formatearFecha = (fecha) => {
+    if (!fecha) return '-';
+    return new Date(fecha).toLocaleString('es-ES');
+  };
+
+  const descargarArchivo = async (endpoint, nombreArchivo) => {
+    setDescargando(true);
     try {
-      const datos = await descargarReporteClinico(reporte.id_reporte);
-      // Descargar como JSON
-      const dataStr = JSON.stringify(datos, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(dataBlob);
+      const response = await fetch(`http://localhost:8000${endpoint}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al descargar');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `reporte_clinico_${reporte.id_reporte}.json`;
+      link.download = nombreArchivo;
       link.click();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
-      setError('Error al descargar reporte');
+      setError('Error al descargar el archivo');
+      console.error(err);
+    } finally {
+      setDescargando(false);
     }
   };
 
-  const handleVerDetalle = (reporte) => {
-    setReporteSeleccionado(reporte);
-    setOpenDetalle(true);
+  const handleDescargarCitas = (formato) => {
+    const fecha = new Date().toISOString().split('T')[0];
+    if (formato === 'excel') {
+      descargarArchivo('/reportes/clinicos/descargar_citas_excel/', `citas_${fecha}.xlsx`);
+    } else if (formato === 'word') {
+      descargarArchivo('/reportes/clinicos/descargar_citas_word/', `citas_${fecha}.docx`);
+    } else if (formato === 'pdf') {
+      descargarArchivo('/reportes/clinicos/descargar_citas_pdf/', `citas_${fecha}.pdf`);
+    }
+    setAnchorCitasEl(null);
+  };
+
+  const handleDescargarAtenciones = (formato) => {
+    const fecha = new Date().toISOString().split('T')[0];
+    if (formato === 'excel') {
+      descargarArchivo('/reportes/clinicos/descargar_atenciones_excel/', `atenciones_${fecha}.xlsx`);
+    } else if (formato === 'word') {
+      descargarArchivo('/reportes/clinicos/descargar_atenciones_word/', `atenciones_${fecha}.docx`);
+    } else if (formato === 'pdf') {
+      descargarArchivo('/reportes/clinicos/descargar_atenciones_pdf/', `atenciones_${fecha}.pdf`);
+    }
+    setAnchorAtencionesEl(null);
   };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 3 }}>
         <h1>Reportes Clínicos y de Citas</h1>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setOpenDialog(true)}
-          sx={{ mr: 2 }}
-        >
-          Generar Nuevo Reporte
-        </Button>
-        <Button
-          variant="outlined"
-          onClick={cargarReportes}
-          disabled={loading}
-        >
-          Actualizar
-        </Button>
+        <p>Vista de citas y atenciones del sistema</p>
       </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -143,211 +142,221 @@ export default function ReportesClinico() {
           <CircularProgress />
         </Box>
       ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                <TableCell><strong>ID</strong></TableCell>
-                <TableCell><strong>Título</strong></TableCell>
-                <TableCell><strong>Rango de Fechas</strong></TableCell>
-                <TableCell><strong>Total Atenciones</strong></TableCell>
-                <TableCell><strong>Estado</strong></TableCell>
-                <TableCell><strong>Acciones</strong></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {reportes.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    No hay reportes clínicos
-                  </TableCell>
-                </TableRow>
-              ) : (
-                reportes.map((reporte) => (
-                  <TableRow key={reporte.id_reporte}>
-                    <TableCell>{reporte.id_reporte}</TableCell>
-                    <TableCell>{reporte.titulo}</TableCell>
-                    <TableCell>
-                      {reporte.fecha_inicio} a {reporte.fecha_fin}
-                    </TableCell>
-                    <TableCell>{reporte.total_atenciones}</TableCell>
-                    <TableCell>
-                      <span
-                        style={{
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          backgroundColor:
-                            reporte.estado === 'completado'
-                              ? '#4caf50'
-                              : reporte.estado === 'error'
-                              ? '#f44336'
-                              : '#ff9800',
-                          color: 'white',
-                        }}
-                      >
-                        {reporte.estado}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => handleVerDetalle(reporte)}
-                        sx={{ mr: 1 }}
-                      >
-                        Ver Detalle
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="success"
-                        onClick={() => handleDescargar(reporte)}
-                      >
-                        Descargar
-                      </Button>
-                    </TableCell>
+        <>
+          {/* Tabs */}
+          <Paper sx={{ mb: 3 }}>
+            <Tabs
+              value={tabValue}
+              onChange={(e, newValue) => setTabValue(newValue)}
+              aria-label="Reportes clínicos"
+            >
+              <Tab label={`Citas (${citas.length})`} />
+              <Tab label={`Atenciones (${atenciones.length})`} />
+            </Tabs>
+          </Paper>
+
+          {/* Tab 0: Citas */}
+          {tabValue === 0 && (
+            <>
+              <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
+                <Button
+                  variant="outlined"
+                  startIcon={<FileDownloadIcon />}
+                  onClick={(e) => setAnchorCitasEl(e.currentTarget)}
+                  disabled={descargando || citas.length === 0}
+                >
+                  Descargar Citas
+                </Button>
+                <Menu
+                  anchorEl={anchorCitasEl}
+                  open={Boolean(anchorCitasEl)}
+                  onClose={() => setAnchorCitasEl(null)}
+                >
+                  <MenuItem onClick={() => handleDescargarCitas('excel')}>
+                    📊 Descargar como Excel
+                  </MenuItem>
+                  <MenuItem onClick={() => handleDescargarCitas('word')}>
+                    📄 Descargar como Word
+                  </MenuItem>
+                  <MenuItem onClick={() => handleDescargarCitas('pdf')}>
+                    📋 Descargar como PDF
+                  </MenuItem>
+                </Menu>
+              </Box>
+              <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                    <TableCell><strong>ID</strong></TableCell>
+                    <TableCell><strong>Fecha y Hora</strong></TableCell>
+                    <TableCell><strong>Paciente</strong></TableCell>
+                    <TableCell><strong>Odontólogo</strong></TableCell>
+                    <TableCell><strong>Estado</strong></TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-
-      {/* Dialog para generar reporte */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Generar Nuevo Reporte Clínico</DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <TextField
-              label="Título"
-              value={formData.titulo}
-              onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-              fullWidth
-            />
-            <TextField
-              label="Fecha Inicio"
-              type="date"
-              value={formData.fecha_inicio}
-              onChange={(e) => setFormData({ ...formData, fecha_inicio: e.target.value })}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-            />
-            <TextField
-              label="Fecha Fin"
-              type="date"
-              value={formData.fecha_fin}
-              onChange={(e) => setFormData({ ...formData, fecha_fin: e.target.value })}
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-            />
-            <TextField
-              label="ID Odontólogo (opcional)"
-              type="number"
-              value={formData.id_odontologo}
-              onChange={(e) => setFormData({ ...formData, id_odontologo: e.target.value })}
-              fullWidth
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>
-          <Button
-            onClick={handleGenerarReporte}
-            variant="contained"
-            disabled={loading}
-          >
-            {loading ? 'Generando...' : 'Generar'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Dialog para detalle del reporte */}
-      <Dialog open={openDetalle} onClose={() => setOpenDetalle(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Detalle del Reporte Clínico</DialogTitle>
-        <DialogContent>
-          {reporteSeleccionado && (
-            <Box sx={{ pt: 2 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <Card>
-                    <CardContent>
-                      <h3>Información General</h3>
-                      <p><strong>Título:</strong> {reporteSeleccionado.titulo}</p>
-                      <p><strong>Rango:</strong> {reporteSeleccionado.fecha_inicio} a {reporteSeleccionado.fecha_fin}</p>
-                      <p><strong>Generado por:</strong> {reporteSeleccionado.generado_por_nombre}</p>
-                      <p><strong>Estado:</strong> {reporteSeleccionado.estado}</p>
-                    </CardContent>
-                  </Card>
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <Card>
-                    <CardContent>
-                      <h3>Estadísticas de Citas</h3>
-                      <p><strong>Total de Citas:</strong> {reporteSeleccionado.total_citas}</p>
-                      <p><strong>Completadas:</strong> {reporteSeleccionado.citas_completadas}</p>
-                      <p><strong>Canceladas:</strong> {reporteSeleccionado.citas_canceladas}</p>
-                      <p><strong>Reprogramadas:</strong> {reporteSeleccionado.citas_reprogramadas}</p>
-                    </CardContent>
-                  </Card>
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <Card>
-                    <CardContent>
-                      <h3>Estadísticas de Atenciones</h3>
-                      <p><strong>Total Atenciones:</strong> {reporteSeleccionado.total_atenciones}</p>
-                      <p><strong>Tiempo Promedio:</strong> {reporteSeleccionado.tiempo_promedio_atencion.toFixed(2)} minutos</p>
-                      <p><strong>Total Procedimientos:</strong> {reporteSeleccionado.total_procedimientos}</p>
-                    </CardContent>
-                  </Card>
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <Card>
-                    <CardContent>
-                      <h3>Estadísticas de Pacientes</h3>
-                      <p><strong>Total Atendidos:</strong> {reporteSeleccionado.total_pacientes_atendidos}</p>
-                      <p><strong>Nuevos:</strong> {reporteSeleccionado.pacientes_nuevos}</p>
-                      <p><strong>Recurrentes:</strong> {reporteSeleccionado.pacientes_recurrentes}</p>
-                    </CardContent>
-                  </Card>
-                </Grid>
-
-                {Object.keys(reporteSeleccionado.procedimientos_por_tipo).length > 0 && (
-                  <Grid item xs={12}>
-                    <Card>
-                      <CardContent>
-                        <h3>Procedimientos por Tipo</h3>
-                        <Table size="small">
-                          <TableHead>
-                            <TableRow>
-                              <TableCell><strong>Tipo</strong></TableCell>
-                              <TableCell align="right"><strong>Cantidad</strong></TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {Object.entries(reporteSeleccionado.procedimientos_por_tipo).map(([tipo, cantidad]) => (
-                              <TableRow key={tipo}>
-                                <TableCell>{tipo}</TableCell>
-                                <TableCell align="right">{cantidad}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                )}
-              </Grid>
-            </Box>
+                </TableHead>
+                <TableBody>
+                  {citas.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center">
+                        No hay citas registradas
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    citas.map((cita) => (
+                      <TableRow key={cita.id_cita}>
+                        <TableCell>{cita.id_cita}</TableCell>
+                        <TableCell>{formatearFecha(cita.fecha)}</TableCell>
+                        <TableCell>
+                          {cita.id_paciente?.nombre || cita.id_paciente || '-'}
+                        </TableCell>
+                        <TableCell>
+                          {cita.id_odontologo?.nombre || cita.id_odontologo || 'Sin asignar'}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={cita.estado}
+                            size="small"
+                            color={getColorEstado(cita.estado)}
+                            variant="outlined"
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            </>
           )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDetalle(false)}>Cerrar</Button>
-        </DialogActions>
-      </Dialog>
+
+          {/* Tab 1: Atenciones */}
+          {tabValue === 1 && (
+            <>
+              <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
+                <Button
+                  variant="outlined"
+                  startIcon={<FileDownloadIcon />}
+                  onClick={(e) => setAnchorAtencionesEl(e.currentTarget)}
+                  disabled={descargando || atenciones.length === 0}
+                >
+                  Descargar Atenciones
+                </Button>
+                <Menu
+                  anchorEl={anchorAtencionesEl}
+                  open={Boolean(anchorAtencionesEl)}
+                  onClose={() => setAnchorAtencionesEl(null)}
+                >
+                  <MenuItem onClick={() => handleDescargarAtenciones('excel')}>
+                    📊 Descargar como Excel
+                  </MenuItem>
+                  <MenuItem onClick={() => handleDescargarAtenciones('word')}>
+                    📄 Descargar como Word
+                  </MenuItem>
+                  <MenuItem onClick={() => handleDescargarAtenciones('pdf')}>
+                    📋 Descargar como PDF
+                  </MenuItem>
+                </Menu>
+              </Box>
+              <TableContainer component={Paper}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                    <TableCell><strong>ID</strong></TableCell>
+                    <TableCell><strong>Paciente</strong></TableCell>
+                    <TableCell><strong>Odontólogo</strong></TableCell>
+                    <TableCell><strong>Fecha Inicio</strong></TableCell>
+                    <TableCell><strong>Fecha Fin</strong></TableCell>
+                    <TableCell><strong>Estado</strong></TableCell>
+                    <TableCell><strong>Observaciones</strong></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {atenciones.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} align="center">
+                        No hay atenciones registradas
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    atenciones.map((atencion) => (
+                      <TableRow key={atencion.id_atencion}>
+                        <TableCell>{atencion.id_atencion}</TableCell>
+                        <TableCell>
+                          {atencion.id_paciente?.nombre || atencion.id_paciente || '-'}
+                        </TableCell>
+                        <TableCell>
+                          {atencion.id_odontologo?.nombre || atencion.id_odontologo || '-'}
+                        </TableCell>
+                        <TableCell>{formatearFecha(atencion.fecha_inicio)}</TableCell>
+                        <TableCell>{formatearFecha(atencion.fecha_fin)}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={atencion.estado}
+                            size="small"
+                            color={getColorEstado(atencion.estado)}
+                            variant="outlined"
+                          />
+                        </TableCell>
+                        <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {atencion.observaciones_generales || '-'}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            </>
+          )}
+
+          {/* Resumen */}
+          <Box sx={{ mt: 4, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Total de Citas
+                </Typography>
+                <Typography variant="h5">
+                  {citas.length}
+                </Typography>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Total de Atenciones
+                </Typography>
+                <Typography variant="h5">
+                  {atenciones.length}
+                </Typography>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Citas Confirmadas
+                </Typography>
+                <Typography variant="h5">
+                  {citas.filter(c => c.estado === 'confirmada').length}
+                </Typography>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Atenciones Finalizadas
+                </Typography>
+                <Typography variant="h5">
+                  {atenciones.filter(a => a.estado === 'finalizada').length}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        </>
+      )}
     </Container>
   );
 }

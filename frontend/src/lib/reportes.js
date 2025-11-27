@@ -129,3 +129,61 @@ export async function buscarReportesPorEtiqueta(etiqueta) {
 export async function crearMetaReporte(data) {
   return apiPost('/reportes/meta/', data)
 }
+
+// ============================================
+// DESCARGAS DE REPORTES (PDF, Excel, Word)
+// ============================================
+
+export async function descargarCitasExcel() {
+  return fetch('http://localhost:8000/reportes/clinicos/descargar_citas_excel/', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
+    }
+  })
+}
+
+export async function descargarCitasWord() {
+  return fetch('http://localhost:8000/reportes/clinicos/descargar_citas_word/', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
+    }
+  })
+}
+
+export async function descargarCitasPdf() {
+  return fetch('http://localhost:8000/reportes/clinicos/descargar_citas_pdf/', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
+    }
+  })
+}
+
+export async function descargarAtencionesExcel() {
+  return fetch('http://localhost:8000/reportes/clinicos/descargar_atenciones_excel/', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
+    }
+  })
+}
+
+export async function descargarAtencionesWord() {
+  return fetch('http://localhost:8000/reportes/clinicos/descargar_atenciones_word/', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
+    }
+  })
+}
+
+export async function descargarAtencionesPdf() {
+  return fetch('http://localhost:8000/reportes/clinicos/descargar_atenciones_pdf/', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
+    }
+  })
+}

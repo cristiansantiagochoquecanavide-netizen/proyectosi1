@@ -146,26 +146,33 @@ class ReporteClinico(models.Model):
         related_name='reportes_clinicos'
     )
     
-    # Datos de citas (CU8: Gestionar cita)
-    total_citas = models.IntegerField(default=0, validators=[MinValueValidator(0)])
-    citas_confirmadas = models.IntegerField(default=0, validators=[MinValueValidator(0)])
-    citas_programadas = models.IntegerField(default=0, validators=[MinValueValidator(0)])
-    citas_canceladas = models.IntegerField(default=0, validators=[MinValueValidator(0)])
-    citas_pendientes = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    # Tipos de cita a filtrar
+    tipo_cita = models.CharField(
+        max_length=50,
+        blank=True,
+        choices=[
+            ('consulta', 'Consulta'),
+            ('procedimiento', 'Procedimiento'),
+            ('seguimiento', 'Seguimiento'),
+            ('emergencia', 'Emergencia'),
+            ('todas', 'Todas'),
+        ],
+        default='todas'
+    )
     
-    # Datos de atenciones (CU11-CU15: Paquete de Atención)
+    # Datos de citas
+    total_citas = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    citas_completadas = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    citas_canceladas = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    citas_reprogramadas = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    
+    # Datos de atenciones
     total_atenciones = models.IntegerField(default=0, validators=[MinValueValidator(0)])
-    atenciones_completadas = models.IntegerField(default=0, validators=[MinValueValidator(0)])
-    atenciones_en_curso = models.IntegerField(default=0, validators=[MinValueValidator(0)])
-    atenciones_canceladas = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     tiempo_promedio_atencion = models.FloatField(default=0.0, validators=[MinValueValidator(0)])  # En minutos
     
-    # Datos de procedimientos (CU12: Registrar procedimientos)
+    # Datos de procedimientos
     total_procedimientos = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     procedimientos_por_tipo = models.JSONField(default=dict, blank=True)  # {tipo_procedimiento: cantidad}
-    
-    # Datos de odontogramas (CU13: Actualizar odontograma)
-    total_odontogramas_creados = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     
     # Datos de pacientes
     total_pacientes_atendidos = models.IntegerField(default=0, validators=[MinValueValidator(0)])
@@ -206,13 +213,9 @@ class ReporteClinico(models.Model):
         """
         Genera automáticamente los datos del reporte consultando citas y atenciones
         Levanta excepción si no hay datos disponibles para los filtros
-        
-        Usa:
-        - CU8: Gestionar cita (modelos de Cita)
-        - CU11-CU15: Paquete de Atención (modelos de Atencion, Procedimiento, Odontograma)
         """
         from citas.models import Cita
-        from atencion.models import Atencion, Procedimiento, Odontograma
+        from atencion.models import Atencion, Procedimiento
         
         # Construir filtros de citas
         filtro_citas = models.Q(
@@ -222,30 +225,28 @@ class ReporteClinico(models.Model):
         if self.id_odontologo:
             filtro_citas &= models.Q(id_odontologo=self.id_odontologo)
         
-        # Consultar citas (CU8: Gestionar cita)
+        if self.tipo_cita != 'todas':
+            filtro_citas &= models.Q(tipo_cita=self.tipo_cita)
+        
+        # Consultar citas
         citas = Cita.objects.filter(filtro_citas)
         self.total_citas = citas.count()
-        self.citas_confirmadas = citas.filter(estado='confirmada').count()
-        self.citas_programadas = citas.filter(estado='programada').count()
+        self.citas_completadas = citas.filter(estado='completada').count()
         self.citas_canceladas = citas.filter(estado='cancelada').count()
-        self.citas_pendientes = citas.filter(estado='pendiente').count()
+        self.citas_reprogramadas = citas.filter(estado='reprogramada').count()
         
-        # Construir filtros de atenciones
-        filtro_atenciones = models.Q(
-            fecha_inicio__date__range=[self.fecha_inicio, self.fecha_fin]
+        # Consultar atenciones
+        atenciones = Atencion.objects.filter(
+            fecha_inicio__date__range=[self.fecha_inicio, self.fecha_fin],
+            estado='finalizada'
         )
         
         if self.id_odontologo:
-            filtro_atenciones &= models.Q(id_odontologo=self.id_odontologo)
+            atenciones = atenciones.filter(id_odontologo=self.id_odontologo)
         
-        # Consultar atenciones (CU11: Iniciar atención desde cita)
-        atenciones = Atencion.objects.filter(filtro_atenciones)
         self.total_atenciones = atenciones.count()
-        self.atenciones_completadas = atenciones.filter(estado='finalizada').count()
-        self.atenciones_en_curso = atenciones.filter(estado='en_curso').count()
-        self.atenciones_canceladas = atenciones.filter(estado='cancelada').count()
         
-        # Calcular tiempo promedio de atención (CU11)
+        # Calcular tiempo promedio de atención
         if self.total_atenciones > 0:
             tiempos = []
             for atencion in atenciones:
@@ -254,7 +255,7 @@ class ReporteClinico(models.Model):
                     tiempos.append(duracion)
             self.tiempo_promedio_atencion = sum(tiempos) / len(tiempos) if tiempos else 0
         
-        # Consultar procedimientos (CU12: Registrar procedimientos en atención)
+        # Consultar procedimientos
         procedimientos = Procedimiento.objects.filter(
             id_atencion__in=atenciones
         )
@@ -266,12 +267,6 @@ class ReporteClinico(models.Model):
             proc_type = proc.nombre
             desglose[proc_type] = desglose.get(proc_type, 0) + 1
         self.procedimientos_por_tipo = desglose
-        
-        # Consultar odontogramas (CU13: Actualizar odontograma)
-        odontogramas = Odontograma.objects.filter(
-            fecha_registro__date__range=[self.fecha_inicio, self.fecha_fin]
-        )
-        self.total_odontogramas_creados = odontogramas.count()
         
         # Datos de pacientes
         pacientes_ids = atenciones.values_list('id_paciente', flat=True).distinct()

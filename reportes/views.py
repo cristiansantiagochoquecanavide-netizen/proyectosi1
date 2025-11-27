@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from django.db.models import Q
+from django.http import FileResponse
 from datetime import datetime
 from decimal import Decimal
 from .models import ReporteFinanciero, ReporteClinico, ReporteDefault, MetaReporte
@@ -13,7 +14,14 @@ from .serializers import (
     MetaReporteSerializer
 )
 from .auditoria import registrar_accion
+from .exportar import (
+    exportar_citas_a_excel, exportar_atenciones_a_excel,
+    exportar_citas_a_word, exportar_atenciones_a_word,
+    exportar_citas_a_pdf, exportar_atenciones_a_pdf
+)
 from seguridad_y_personal.models import Usuario
+from citas.models import Cita
+from atencion.models import Atencion
 
 
 class ReporteFinancieroViewSet(viewsets.ModelViewSet):
@@ -214,12 +222,14 @@ class ReporteClinicoViewSet(viewsets.ModelViewSet):
             "fecha_inicio": "2025-01-01",
             "fecha_fin": "2025-12-31",
             "id_odontologo": 1 (opcional),
+            "tipo_cita": "consulta" (opcional),
             "titulo": "Reporte Clínico 2025" (opcional)
         }
         """
         fecha_inicio = request.data.get('fecha_inicio')
         fecha_fin = request.data.get('fecha_fin')
         id_odontologo = request.data.get('id_odontologo')
+        tipo_cita = request.data.get('tipo_cita', 'todas')
         titulo = request.data.get('titulo', "Reporte Clínico")
         
         if not fecha_inicio or not fecha_fin:
@@ -245,6 +255,7 @@ class ReporteClinicoViewSet(viewsets.ModelViewSet):
                 fecha_inicio=fecha_inicio,
                 fecha_fin=fecha_fin,
                 id_odontologo_id=id_odontologo,
+                tipo_cita=tipo_cita,
                 generado_por=request.user if request.user.is_authenticated else None
             )
             
@@ -311,6 +322,234 @@ class ReporteClinicoViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    def descargar_citas_excel(self, request):
+        """Descarga todas las citas en formato Excel"""
+        try:
+            citas = Cita.objects.all().values('id_cita', 'fecha', 'id_paciente', 'id_odontologo', 'estado')
+            citas_list = []
+            for cita in citas:
+                cita_dict = dict(cita)
+                # Obtener nombre del paciente
+                if cita['id_paciente']:
+                    try:
+                        from pacientes.models import Paciente
+                        paciente = Paciente.objects.get(id_paciente=cita['id_paciente'])
+                        cita_dict['id_paciente'] = {'nombre': paciente.nombre}
+                    except:
+                        cita_dict['id_paciente'] = cita['id_paciente']
+                # Obtener nombre del odontólogo
+                if cita['id_odontologo']:
+                    try:
+                        from citas.models import Odontologo
+                        odontologo = Odontologo.objects.get(id_odontologo=cita['id_odontologo'])
+                        cita_dict['id_odontologo'] = {'nombre': odontologo.nombre}
+                    except:
+                        cita_dict['id_odontologo'] = cita['id_odontologo']
+                citas_list.append(cita_dict)
+            
+            file_obj = exportar_citas_a_excel(citas_list)
+            return FileResponse(
+                file_obj,
+                as_attachment=True,
+                filename=f'citas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Error al descargar citas: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=['get'])
+    def descargar_atenciones_excel(self, request):
+        """Descarga todas las atenciones en formato Excel"""
+        try:
+            atenciones = Atencion.objects.all().values('id_atencion', 'id_paciente', 'id_odontologo', 'fecha_inicio', 'fecha_fin', 'estado', 'observaciones_generales')
+            atenciones_list = []
+            for atencion in atenciones:
+                atencion_dict = dict(atencion)
+                # Obtener nombre del paciente
+                if atencion['id_paciente']:
+                    try:
+                        from pacientes.models import Paciente
+                        paciente = Paciente.objects.get(id_paciente=atencion['id_paciente'])
+                        atencion_dict['id_paciente'] = {'nombre': paciente.nombre}
+                    except:
+                        atencion_dict['id_paciente'] = atencion['id_paciente']
+                # Obtener nombre del odontólogo
+                if atencion['id_odontologo']:
+                    try:
+                        odontologo = Usuario.objects.get(id=atencion['id_odontologo'])
+                        atencion_dict['id_odontologo'] = {'nombre': odontologo.first_name + ' ' + odontologo.last_name}
+                    except:
+                        atencion_dict['id_odontologo'] = atencion['id_odontologo']
+                atenciones_list.append(atencion_dict)
+            
+            file_obj = exportar_atenciones_a_excel(atenciones_list)
+            return FileResponse(
+                file_obj,
+                as_attachment=True,
+                filename=f'atenciones_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Error al descargar atenciones: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=['get'])
+    def descargar_citas_word(self, request):
+        """Descarga todas las citas en formato Word"""
+        try:
+            citas = Cita.objects.all().values('id_cita', 'fecha', 'id_paciente', 'id_odontologo', 'estado')
+            citas_list = []
+            for cita in citas:
+                cita_dict = dict(cita)
+                # Obtener nombre del paciente
+                if cita['id_paciente']:
+                    try:
+                        from pacientes.models import Paciente
+                        paciente = Paciente.objects.get(id_paciente=cita['id_paciente'])
+                        cita_dict['id_paciente'] = {'nombre': paciente.nombre}
+                    except:
+                        cita_dict['id_paciente'] = cita['id_paciente']
+                # Obtener nombre del odontólogo
+                if cita['id_odontologo']:
+                    try:
+                        from citas.models import Odontologo
+                        odontologo = Odontologo.objects.get(id_odontologo=cita['id_odontologo'])
+                        cita_dict['id_odontologo'] = {'nombre': odontologo.nombre}
+                    except:
+                        cita_dict['id_odontologo'] = cita['id_odontologo']
+                citas_list.append(cita_dict)
+            
+            file_obj = exportar_citas_a_word(citas_list)
+            return FileResponse(
+                file_obj,
+                as_attachment=True,
+                filename=f'citas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.docx'
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Error al descargar citas: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=['get'])
+    def descargar_atenciones_word(self, request):
+        """Descarga todas las atenciones en formato Word"""
+        try:
+            atenciones = Atencion.objects.all().values('id_atencion', 'id_paciente', 'id_odontologo', 'fecha_inicio', 'fecha_fin', 'estado', 'observaciones_generales')
+            atenciones_list = []
+            for atencion in atenciones:
+                atencion_dict = dict(atencion)
+                # Obtener nombre del paciente
+                if atencion['id_paciente']:
+                    try:
+                        from pacientes.models import Paciente
+                        paciente = Paciente.objects.get(id_paciente=atencion['id_paciente'])
+                        atencion_dict['id_paciente'] = {'nombre': paciente.nombre}
+                    except:
+                        atencion_dict['id_paciente'] = atencion['id_paciente']
+                # Obtener nombre del odontólogo
+                if atencion['id_odontologo']:
+                    try:
+                        odontologo = Usuario.objects.get(id=atencion['id_odontologo'])
+                        atencion_dict['id_odontologo'] = {'nombre': odontologo.first_name + ' ' + odontologo.last_name}
+                    except:
+                        atencion_dict['id_odontologo'] = atencion['id_odontologo']
+                atenciones_list.append(atencion_dict)
+            
+            file_obj = exportar_atenciones_a_word(atenciones_list)
+            return FileResponse(
+                file_obj,
+                as_attachment=True,
+                filename=f'atenciones_{datetime.now().strftime("%Y%m%d_%H%M%S")}.docx'
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Error al descargar atenciones: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=['get'])
+    def descargar_citas_pdf(self, request):
+        """Descarga todas las citas en formato PDF"""
+        try:
+            citas = Cita.objects.all().values('id_cita', 'fecha', 'id_paciente', 'id_odontologo', 'estado')
+            citas_list = []
+            for cita in citas:
+                cita_dict = dict(cita)
+                # Obtener nombre del paciente
+                if cita['id_paciente']:
+                    try:
+                        from pacientes.models import Paciente
+                        paciente = Paciente.objects.get(id_paciente=cita['id_paciente'])
+                        cita_dict['id_paciente'] = {'nombre': paciente.nombre}
+                    except:
+                        cita_dict['id_paciente'] = cita['id_paciente']
+                # Obtener nombre del odontólogo
+                if cita['id_odontologo']:
+                    try:
+                        from citas.models import Odontologo
+                        odontologo = Odontologo.objects.get(id_odontologo=cita['id_odontologo'])
+                        cita_dict['id_odontologo'] = {'nombre': odontologo.nombre}
+                    except:
+                        cita_dict['id_odontologo'] = cita['id_odontologo']
+                citas_list.append(cita_dict)
+            
+            file_obj = exportar_citas_a_pdf(citas_list)
+            return FileResponse(
+                file_obj,
+                as_attachment=True,
+                filename=f'citas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf',
+                content_type='application/pdf'
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Error al descargar citas: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=False, methods=['get'])
+    def descargar_atenciones_pdf(self, request):
+        """Descarga todas las atenciones en formato PDF"""
+        try:
+            atenciones = Atencion.objects.all().values('id_atencion', 'id_paciente', 'id_odontologo', 'fecha_inicio', 'fecha_fin', 'estado', 'observaciones_generales')
+            atenciones_list = []
+            for atencion in atenciones:
+                atencion_dict = dict(atencion)
+                # Obtener nombre del paciente
+                if atencion['id_paciente']:
+                    try:
+                        from pacientes.models import Paciente
+                        paciente = Paciente.objects.get(id_paciente=atencion['id_paciente'])
+                        atencion_dict['id_paciente'] = {'nombre': paciente.nombre}
+                    except:
+                        atencion_dict['id_paciente'] = atencion['id_paciente']
+                # Obtener nombre del odontólogo
+                if atencion['id_odontologo']:
+                    try:
+                        odontologo = Usuario.objects.get(id=atencion['id_odontologo'])
+                        atencion_dict['id_odontologo'] = {'nombre': odontologo.first_name + ' ' + odontologo.last_name}
+                    except:
+                        atencion_dict['id_odontologo'] = atencion['id_odontologo']
+                atenciones_list.append(atencion_dict)
+            
+            file_obj = exportar_atenciones_a_pdf(atenciones_list)
+            return FileResponse(
+                file_obj,
+                as_attachment=True,
+                filename=f'atenciones_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf',
+                content_type='application/pdf'
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Error al descargar atenciones: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 
 
 class ReporteDefaultViewSet(viewsets.ReadOnlyModelViewSet):
