@@ -1,0 +1,263 @@
+{
+  "titulo": "Sistema de Reportes - Endpoints API Disponibles",
+  "descripcion": "Referencia completa de endpoints del sistema de reportes",
+  "base_url": "http://localhost:8000/api/reportes",
+  "endpoints": {
+    "reportes_financieros": {
+      "nombre": "Reportes Financieros (CU26)",
+      "rutas": [
+        {
+          "metodo": "GET",
+          "ruta": "/financieros/",
+          "descripcion": "Listar todos los reportes financieros",
+          "parametros": [],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "GET",
+          "ruta": "/financieros/{id}/",
+          "descripcion": "Obtener detalle de un reporte financiero",
+          "parametros": [{"nombre": "id", "tipo": "integer", "requerido": true}],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "POST",
+          "ruta": "/financieros/generar_reporte/",
+          "descripcion": "Generar un nuevo reporte financiero",
+          "body": {
+            "titulo": "string (opcional)",
+            "fecha_inicio": "YYYY-MM-DD (requerido)",
+            "fecha_fin": "YYYY-MM-DD (requerido)"
+          },
+          "respuesta_exitosa": 201
+        },
+        {
+          "metodo": "GET",
+          "ruta": "/financieros/{id}/descargar/",
+          "descripcion": "Descargar reporte en JSON",
+          "parametros": [{"nombre": "id", "tipo": "integer", "requerido": true}],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "GET",
+          "ruta": "/financieros/por_rango/",
+          "descripcion": "Filtrar reportes por rango de fechas",
+          "parametros": [
+            {"nombre": "fecha_inicio", "tipo": "date", "requerido": false},
+            {"nombre": "fecha_fin", "tipo": "date", "requerido": false}
+          ],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "DELETE",
+          "ruta": "/financieros/{id}/",
+          "descripcion": "Eliminar un reporte financiero",
+          "parametros": [{"nombre": "id", "tipo": "integer", "requerido": true}],
+          "respuesta_exitosa": 204
+        }
+      ]
+    },
+    "reportes_clinicos": {
+      "nombre": "Reportes Clínicos y de Citas (CU27)",
+      "rutas": [
+        {
+          "metodo": "GET",
+          "ruta": "/clinicos/",
+          "descripcion": "Listar todos los reportes clínicos",
+          "parametros": [],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "GET",
+          "ruta": "/clinicos/{id}/",
+          "descripcion": "Obtener detalle de un reporte clínico",
+          "parametros": [{"nombre": "id", "tipo": "integer", "requerido": true}],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "POST",
+          "ruta": "/clinicos/generar_reporte/",
+          "descripcion": "Generar un nuevo reporte clínico",
+          "body": {
+            "titulo": "string (opcional)",
+            "fecha_inicio": "YYYY-MM-DD (requerido)",
+            "fecha_fin": "YYYY-MM-DD (requerido)",
+            "id_odontologo": "integer (opcional)",
+            "tipo_cita": "string - todas|consulta|procedimiento|seguimiento|emergencia (opcional)"
+          },
+          "respuesta_exitosa": 201
+        },
+        {
+          "metodo": "GET",
+          "ruta": "/clinicos/{id}/exportar/",
+          "descripcion": "Exportar reporte clínico",
+          "parametros": [{"nombre": "id", "tipo": "integer", "requerido": true}],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "GET",
+          "ruta": "/clinicos/por_rango/",
+          "descripcion": "Filtrar reportes clínicos por rango de fechas",
+          "parametros": [
+            {"nombre": "fecha_inicio", "tipo": "date", "requerido": false},
+            {"nombre": "fecha_fin", "tipo": "date", "requerido": false},
+            {"nombre": "id_odontologo", "tipo": "integer", "requerido": false}
+          ],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "DELETE",
+          "ruta": "/clinicos/{id}/",
+          "descripcion": "Eliminar un reporte clínico",
+          "parametros": [{"nombre": "id", "tipo": "integer", "requerido": true}],
+          "respuesta_exitosa": 204
+        }
+      ]
+    },
+    "bitacora_acciones": {
+      "nombre": "Bitácora de Acciones (Reporte Default)",
+      "descripcion": "Sistema de auditoría que registra todas las acciones en el sistema",
+      "rutas": [
+        {
+          "metodo": "GET",
+          "ruta": "/default/",
+          "descripcion": "Listar todos los registros de bitácora",
+          "parametros": [],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "GET",
+          "ruta": "/default/{id}/",
+          "descripcion": "Obtener detalle de un registro",
+          "parametros": [{"nombre": "id", "tipo": "integer", "requerido": true}],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "GET",
+          "ruta": "/default/por_usuario/",
+          "descripcion": "Filtrar bitácora por usuario",
+          "parametros": [
+            {"nombre": "usuario_id", "tipo": "integer", "requerido": false},
+            {"nombre": "dias", "tipo": "integer", "default": 30, "requerido": false}
+          ],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "GET",
+          "ruta": "/default/por_modulo/",
+          "descripcion": "Filtrar bitácora por módulo",
+          "parametros": [
+            {"nombre": "modulo", "tipo": "string", "requerido": false},
+            {"nombre": "tipo_accion", "tipo": "string", "requerido": false}
+          ],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "GET",
+          "ruta": "/default/por_fecha/",
+          "descripcion": "Filtrar bitácora por rango de fechas",
+          "parametros": [
+            {"nombre": "fecha_inicio", "tipo": "datetime", "requerido": false},
+            {"nombre": "fecha_fin", "tipo": "datetime", "requerido": false}
+          ],
+          "respuesta_exitosa": 200
+        }
+      ]
+    },
+    "busqueda_filtrado": {
+      "nombre": "Búsqueda y Filtrado Avanzado (Meta Reporte)",
+      "descripcion": "Sistema de búsqueda avanzada de reportes",
+      "rutas": [
+        {
+          "metodo": "GET",
+          "ruta": "/meta/",
+          "descripcion": "Listar todos los meta reportes",
+          "parametros": [],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "POST",
+          "ruta": "/meta/",
+          "descripcion": "Crear nuevo meta reporte",
+          "body": {
+            "tipo_reporte": "financiero|clinico|default (requerido)",
+            "objeto_id": "integer (requerido)",
+            "palabras_clave": "string (opcional)",
+            "etiquetas": "string (opcional)",
+            "descripcion_indexada": "string (opcional)",
+            "fecha_inicio": "date (opcional)",
+            "fecha_fin": "date (opcional)"
+          },
+          "respuesta_exitosa": 201
+        },
+        {
+          "metodo": "GET",
+          "ruta": "/meta/buscar_por_palabra/",
+          "descripcion": "Buscar reportes por palabra clave",
+          "parametros": [
+            {"nombre": "palabra", "tipo": "string", "requerido": true},
+            {"nombre": "tipo_reporte", "tipo": "string", "requerido": false}
+          ],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "GET",
+          "ruta": "/meta/buscar_por_fecha/",
+          "descripcion": "Buscar reportes por rango de fechas",
+          "parametros": [
+            {"nombre": "fecha_inicio", "tipo": "date", "requerido": false},
+            {"nombre": "fecha_fin", "tipo": "date", "requerido": false}
+          ],
+          "respuesta_exitosa": 200
+        },
+        {
+          "metodo": "GET",
+          "ruta": "/meta/buscar_por_etiqueta/",
+          "descripcion": "Buscar reportes por etiqueta",
+          "parametros": [
+            {"nombre": "etiqueta", "tipo": "string", "requerido": true}
+          ],
+          "respuesta_exitosa": 200
+        }
+      ]
+    }
+  },
+  "codigos_respuesta": {
+    "200": "OK - Solicitud exitosa",
+    "201": "Created - Recurso creado exitosamente",
+    "204": "No Content - Eliminación exitosa",
+    "400": "Bad Request - Parámetros inválidos",
+    "404": "Not Found - Recurso no encontrado",
+    "500": "Internal Server Error - Error del servidor"
+  },
+  "tipos_accion_bitacora": [
+    "crear",
+    "actualizar",
+    "eliminar",
+    "ver",
+    "descargar",
+    "login",
+    "logout",
+    "exportar",
+    "importar",
+    "otro"
+  ],
+  "modulos_monitoreados": [
+    "pacientes",
+    "citas",
+    "facturas",
+    "reportes",
+    "atenciones",
+    "usuarios"
+  ],
+  "componentes_frontend": {
+    "Index": "Navegador principal de reportes con tabs",
+    "Financiero": "Componente para reportes financieros (CU26)",
+    "Clinico": "Componente para reportes clínicos (CU27)",
+    "Bitacora": "Componente para bitácora de acciones",
+    "Busqueda": "Componente para búsqueda avanzada de reportes"
+  },
+  "servicios_frontend": {
+    "reportes.js": "API service layer con todas las funciones para consumir los endpoints"
+  }
+}

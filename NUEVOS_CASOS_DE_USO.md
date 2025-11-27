@@ -477,3 +477,131 @@ facturacion_y_compras/migrations/0001_initial.py
 **Total de casos de uso implementados:** 9 CU (CU10, CU11, CU12, CU13, CU14, CU15, CU18, CU19)
 
 **Impacto:** Sistema ahora cubre el ciclo completo de atención odontológica, desde la agenda hasta la facturación, con gestión integral de inventario.
+
+---
+
+## 📊 **PAQUETE REPORTES**
+
+### **CU26: Reporte financiero**
+
+**Archivos creados/modificados:**
+- ✅ **`reportes/models.py`** - Nuevo modelo `ReporteFinanciero`
+- ✅ **`reportes/serializers.py`** - Serializer para `ReporteFinanciero`
+- ✅ **`reportes/views.py`** - ViewSet con lógica de generación de reportes
+- ✅ **`reportes/urls.py`** - Nuevas rutas REST para reportes
+- ✅ **`backend/urls.py`** - Incluida ruta de reportes en URLs principales
+
+**Propósito:**
+Permitir al administrador generar reportes de ingresos, egresos y balances económicos en rangos de fechas específicos.
+
+**Cambios realizados:**
+
+**Modelo `ReporteFinanciero` (líneas 7-92 en reportes/models.py):**
+- ✅ **Identificación del reporte:**
+  - `id_reporte`: Primary key
+  - `titulo`: Nombre personalizable del reporte
+  - `fecha_creacion`: Timestamp automático de generación
+
+- ✅ **Rango de fechas:**
+  - `fecha_inicio` y `fecha_fin`: Período para el análisis financiero
+
+- ✅ **Datos de ingresos (ventas):**
+  - `total_ingresos`: Suma de todas las facturas emitidas en el período
+  - `cantidad_facturas`: Número de facturas generadas
+  - Consultados desde `facturacion_y_compras.Factura`
+
+- ✅ **Datos de egresos (compras e insumos):**
+  - `total_egresos`: Suma de movimientos de salida/consumo de inventario
+  - `cantidad_compras`: Número de transacciones de egreso
+  - Consultados desde `inventario_y_compras.MovimientoInventario`
+
+- ✅ **Balance económico:**
+  - `balance_neto`: Cálculo automático (ingresos - egresos)
+
+- ✅ **Detalles analíticos (JSON):**
+  - `detalles_por_procedimiento`: Desglose de ingresos por tipo de procedimiento
+  - `detalles_por_insumo`: Desglose de egresos por insumo utilizado
+
+- ✅ **Auditoría y control:**
+  - `generado_por`: FK a Usuario (administrador que generó el reporte)
+  - `estado`: Estados de generación ('generando', 'completado', 'error')
+  - `mensaje_error`: Registra excepciones (ej: sin datos disponibles)
+  - Timestamps: `created_at`, `updated_at`
+
+**Métodos principales:**
+- ✅ **`calcular_balance()`**: Actualiza `balance_neto = ingresos - egresos`
+- ✅ **`generar_reporte()`**: 
+  - Consulta facturas del período (estados: emitida, pagada, pagada_parcial)
+  - Consulta movimientos de inventario de egreso
+  - **Levanta excepción** si no hay datos disponibles (maneja caso de excepción)
+  - Actualiza todos los campos y marca como 'completado'
+
+**ViewSet `ReporteFinancieroViewSet`:**
+
+**Endpoints disponibles:**
+
+1. **POST /reportes/financieros/generar_reporte/**
+   - Genera un nuevo reporte financiero
+   - Body: `{"fecha_inicio": "YYYY-MM-DD", "fecha_fin": "YYYY-MM-DD", "titulo": "..."}`
+   - Valida rango de fechas
+   - Maneja la excepción de sin datos disponibles
+   - Retorna HTTP 201 si éxito, HTTP 400 si no hay datos
+
+2. **GET /reportes/financieros/**
+   - Lista todos los reportes generados
+   - Paginación automática
+
+3. **GET /reportes/financieros/{id}/**
+   - Recupera un reporte específico
+
+4. **GET /reportes/financieros/{id}/descargar/**
+   - Descarga reporte en formato JSON
+   - Útil para exportación a CSV o PDF
+
+5. **GET /reportes/financieros/por_rango/?fecha_inicio=YYYY-MM-DD&fecha_fin=YYYY-MM-DD**
+   - Filtra reportes existentes por rango de fechas de generación
+
+**Flujo de funcionamiento:**
+
+1. Administrador accede al módulo de reportes financieros
+2. Define rango de fechas (fecha_inicio y fecha_fin)
+3. Envía solicitud POST a `/reportes/financieros/generar_reporte/`
+4. Sistema consulta:
+   - Facturas emitidas en el rango
+   - Movimientos de inventario de egreso en el rango
+5. Si no hay datos → Levanta excepción "No hay datos disponibles"
+6. Si hay datos → Genera reporte con:
+   - Total de ingresos
+   - Total de egresos
+   - Balance neto calculado
+   - Cantidad de transacciones
+7. Reporte disponible para:
+   - Visualización en frontend
+   - Descarga JSON
+   - Exportación a PDF/CSV (en frontal)
+
+**Postcondiciones:**
+- ✅ Reporte generado y almacenado en BD
+- ✅ Disponible para descarga/impresión
+- ✅ Auditable (registra quién lo generó y cuándo)
+- ✅ Historial completo de reportes generados
+
+**Relaciones de modelo:**
+- FK a `seguridad_y_personal.Usuario` → Rastreo de auditoría
+- Consultas a `facturacion_y_compras.Factura` → Datos de ingresos
+- Consultas a `inventario_y_compras.MovimientoInventario` → Datos de egresos
+
+---
+
+## 📈 **RESUMEN ACTUALIZADO**
+
+**Total de modelos nuevos:** 17 (+1 ReporteFinanciero)
+- Atencion, Procedimiento, Odontograma, PiezaDental, Tratamiento, TratamientoAtencion (Atención)
+- Insumo, MovimientoInventario, OrdenCompra, DetalleOrdenCompra (Inventario)
+- Factura, DetalleFactura, Pago, Recibo (Facturación)
+- **ReporteFinanciero** (Reportes)
+- Disponibilidad (Citas - mejorado)
+
+**Total de casos de uso implementados:** 10 CU (CU10, CU11, CU12, CU13, CU14, CU15, CU18, CU19, **CU26**)
+
+**Impacto:** Sistema ahora incluye análisis financiero completo para administradores, permitiendo toma de decisiones basada en datos de ingresos y egresos.

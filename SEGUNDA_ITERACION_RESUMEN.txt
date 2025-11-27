@@ -1,0 +1,384 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                ║
+║              ✅ SEGUNDA ITERACIÓN - FRONTEND CU26 COMPLETADO                    ║
+║                                                                                ║
+║                    Frontend del Reporte Financiero Implementado                ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎨 IMPLEMENTACIÓN FRONTEND - CU26
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RESPUESTA A TU PREGUNTA:
+"¿Por qué no está visualizado en el frontend y backend este caso de uso?"
+
+RESPUESTA: ✅ YA ESTÁ IMPLEMENTADO EN AMBOS LADOS
+
+✅ Backend:  Completamente funcional (Primera iteración)
+✅ Frontend: Ahora completamente implementado (Esta iteración)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 ARCHIVOS CREADOS EN ESTA ITERACIÓN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FRONTEND (2 archivos):
+  ✅ frontend/src/pages/reportes/Index.jsx     (342 líneas)
+     └─ Componente React completo
+        • Formulario de generación
+        • Tabla de reportes
+        • Diálogo de detalles
+        • Acciones (Ver, Descargar, Eliminar)
+        • Manejo de errores y estados
+
+  ✅ frontend/src/lib/reportes.js              (37 líneas)
+     └─ Servicios de API
+        • listarReportesFinancieros()
+        • generarReporteFinanciero()
+        • descargarReporte()
+        • eliminarReporte()
+        • Otros endpoints
+
+DOCUMENTACIÓN (2 archivos):
+  ✅ FRONTEND_IMPLEMENTACION_CU26.md           - Detalles técnicos del frontend
+  ✅ POR_QUE_AHORA_ESTA_VISIBLE.md             - Explicación de implementación
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎨 INTERFAZ DE USUARIO IMPLEMENTADA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECCIÓN 1: GENERAR NUEVO REPORTE
+┌─────────────────────────────────────────────┐
+│ 📋 Generar Nuevo Reporte                    │
+├─────────────────────────────────────────────┤
+│ [📅 Fecha Inicio]  [📅 Fecha Fin]           │
+│ [📝 Título Opcional]                        │
+│                                             │
+│ [🔘 GENERAR REPORTE 🔘]                   │
+└─────────────────────────────────────────────┘
+
+SECCIÓN 2: TABLA DE REPORTES
+┌──────────────────────────────────────────────────────────────────────┐
+│ ID │ Título  │ Período   │ Ingresos  │ Egresos  │ Balance  │ Acciones│
+├──────────────────────────────────────────────────────────────────────┤
+│ 1  │ Nov2025 │ 01 - 30   │ Bs 5,000  │ Bs 2,000 │ Bs 3,000 │ 👁 📥 🗑│
+│ 2  │ Octubre │ 01 - 31   │ Bs 8,500  │ Bs 3,200 │ Bs 5,300 │ 👁 📥 🗑│
+└──────────────────────────────────────────────────────────────────────┘
+
+SECCIÓN 3: DETALLES EN MODAL
+┌─────────────────────────────────────────┐
+│ 📊 Detalles del Reporte                 │
+├─────────────────────────────────────────┤
+│ Título:              Reporte Noviembre   │
+│ Período:             01/11 a 30/11       │
+│ Total Ingresos:      Bs. 5,000.00 ✓     │
+│ Total Egresos:       Bs. 2,000.00 ✗     │
+│ Balance Neto:        Bs. 3,000.00 ✓✓    │
+│ Cantidad Facturas:   10                  │
+│ Cantidad Movimientos: 5                  │
+├─────────────────────────────────────────┤
+│ [CERRAR]                                 │
+└─────────────────────────────────────────┘
+
+BOTONES DE ACCIÓN
+┌─────────────────────────┐
+│ 👁 VER      - Detalles  │
+│ 📥 DESCARGA - JSON      │
+│ 🗑 ELIMINAR - Borrar    │
+└─────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ CARACTERÍSTICAS IMPLEMENTADAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FORMULARIO DE GENERACIÓN:
+  ✅ Input de fecha inicio (requerido)
+  ✅ Input de fecha fin (requerido)
+  ✅ Input de título (opcional)
+  ✅ Validación: fecha_fin ≥ fecha_inicio
+  ✅ Validación: ambas fechas requeridas
+  ✅ Botón "Generar Reporte"
+  ✅ Spinner mientras genera
+  ✅ Estado deshabilitado durante generación
+
+TABLA DE REPORTES:
+  ✅ ID del reporte
+  ✅ Título del reporte
+  ✅ Período (fecha inicio - fecha fin)
+  ✅ Total Ingresos (color verde)
+  ✅ Total Egresos (color rojo)
+  ✅ Balance Neto (verde si > 0, rojo si < 0)
+  ✅ Estado (Completado/Generando/Error)
+  ✅ Usuario que lo generó
+  ✅ Botones de acción
+
+DIÁLOGO DE DETALLES:
+  ✅ Modal emergente
+  ✅ Muestra título, período
+  ✅ Muestra ingresos, egresos, balance
+  ✅ Cantidad de facturas y movimientos
+  ✅ Muestra errores si los hay
+  ✅ Botón para cerrar
+  ✅ Responsive
+
+ACCIONES:
+  ✅ VER: Abre diálogo con detalles
+  ✅ DESCARGAR: Descarga JSON
+  ✅ ELIMINAR: Borra con confirmación
+
+MANEJO DE ERRORES:
+  ✅ Alerta roja cuando falla
+  ✅ Alerta verde cuando éxito
+  ✅ Mensaje "Sin datos" cuando vacío
+  ✅ Spinner mientras carga
+  ✅ Deshabilitación de botones en proceso
+
+FORMATO DE DATOS:
+  ✅ Moneda: Bs. XXX,XXX.XX (boliviano)
+  ✅ Fechas: DD/MM/YYYY
+  ✅ Colores visuales para estados
+  ✅ Indicadores de ganancia/pérdida
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔌 INTEGRACIÓN CON BACKEND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ENDPOINTS CONSUMIDOS:
+
+1️⃣ Listar reportes
+   GET /reportes/financieros/
+   ↓ Respuesta: Array de reportes
+
+2️⃣ Generar reporte
+   POST /reportes/financieros/generar_reporte/
+   ↓ Body: {fecha_inicio, fecha_fin, titulo}
+   ↓ Respuesta: Nuevo reporte con datos
+
+3️⃣ Obtener detalles
+   GET /reportes/financieros/{id}/
+   ↓ Respuesta: Reporte completo
+
+4️⃣ Descargar
+   GET /reportes/financieros/{id}/descargar/
+   ↓ Respuesta: Mismo reporte (para descargar)
+
+5️⃣ Eliminar
+   DELETE /reportes/financieros/{id}/
+   ↓ Respuesta: Confirmación
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 FLUJOS DE USUARIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FLUJO 1: GENERAR REPORTE
+Usuario en página de reportes
+    ↓
+Selecciona fecha inicio: 01/11/2025
+    ↓
+Selecciona fecha fin: 30/11/2025
+    ↓
+Ingresa título: "Reporte Noviembre"
+    ↓
+Clica "GENERAR REPORTE"
+    ↓
+Frontend valida (fin ≥ inicio ✓)
+    ↓
+POST /reportes/financieros/generar_reporte/
+    ↓
+Backend genera (consulta Facturas + Inventario)
+    ↓
+Backend retorna reporte con ingresos/egresos
+    ↓
+Frontend agrega a tabla
+    ↓
+Muestra alerta "✓ Reporte generado exitosamente"
+    ↓
+Reporte visible en tabla
+
+FLUJO 2: VER DETALLES
+Usuario en tabla
+    ↓
+Clica botón "VER"
+    ↓
+Se abre modal
+    ↓
+Muestra:
+  • Título
+  • Período
+  • Ingresos: Bs. 5,000.00
+  • Egresos: Bs. 2,000.00
+  • Balance: Bs. 3,000.00 ✓
+    ↓
+Usuario clica "CERRAR"
+
+FLUJO 3: DESCARGAR
+Usuario en tabla
+    ↓
+Clica "DESCARGAR"
+    ↓
+Frontend llama GET /descargar/
+    ↓
+Se descarga: reporte-financiero-1.json
+    ↓
+Usuario puede abrir en editor/Excel
+
+FLUJO 4: ELIMINAR
+Usuario en tabla
+    ↓
+Clica "ELIMINAR"
+    ↓
+Confirmación: "¿Estás seguro?"
+    ↓
+Si confirma: DELETE request
+    ↓
+Reporte se quita de tabla
+    ↓
+Alerta "✓ Reporte eliminado"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 ESTADÍSTICAS DE ESTA ITERACIÓN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CÓDIGO:
+  • Líneas de React:     342
+  • Líneas de Servicios: 37
+  • Total código nuevo:  379 líneas
+
+DOCUMENTACIÓN:
+  • Documentos nuevos: 2
+  • Líneas de docs:    400+
+
+COMPONENTES REUTILIZADOS:
+  • De Material-UI: 14+ componentes
+  • Iconos: 4
+
+FUNCIONES IMPLEMENTADAS:
+  • Generación de reportes: ✅
+  • Visualización de tabla: ✅
+  • Detalles en modal: ✅
+  • Descarga JSON: ✅
+  • Eliminación: ✅
+  • Validaciones: ✅
+  • Manejo de errores: ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ CHECKLIST DE IMPLEMENTACIÓN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FRONTEND:
+  ✅ Componente principal creado
+  ✅ Servicios de API implementados
+  ✅ Formulario de generación
+  ✅ Tabla de reportes
+  ✅ Diálogo de detalles
+  ✅ Botones de acción
+  ✅ Validaciones frontend
+  ✅ Manejo de errores
+  ✅ Spinners de carga
+  ✅ Alertas de éxito/error
+
+INTEGRACIÓN:
+  ✅ Consume 5 endpoints
+  ✅ Integrado con backend
+  ✅ Maneja excepciones
+  ✅ Muestra estados del backend
+
+DISEÑO:
+  ✅ Responsive
+  ✅ Material-UI
+  ✅ Colores significativos
+  ✅ Formatos localizados
+
+DOCUMENTACIÓN:
+  ✅ Documentación técnica
+  ✅ Explicación de implementación
+  ✅ Guías de uso
+  ✅ Flujos documentados
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 CÓMO VERLO EN ACCIÓN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASO 1: Asegúrate que backend corre
+  $ python manage.py runserver
+  ✓ Backend en http://localhost:8000
+
+PASO 2: Asegúrate que frontend corre
+  $ npm run dev
+  ✓ Frontend en http://localhost:5173
+
+PASO 3: Abre en navegador
+  http://localhost:5173/reportes
+
+PASO 4: Genera un reporte
+  • Selecciona rango de fechas
+  • Clica "Generar"
+  • ¡Verás el reporte en la tabla!
+
+PASO 5: Prueba acciones
+  • Clica "VER" → Ve detalles
+  • Clica "DESCARGAR" → Descarga JSON
+  • Clica "ELIMINAR" → Borra reporte
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📈 COMPARACIÓN: ANTES vs DESPUÉS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ANTES DE ESTA ITERACIÓN:
+┌──────────────────────────┐
+│ ❌ Frontend: Placeholder │
+│ "Próximamente..."        │
+│                          │
+│ ✅ Backend: Funcional    │
+│ 5 endpoints listos       │
+└──────────────────────────┘
+
+DESPUÉS DE ESTA ITERACIÓN:
+┌────────────────────────────────┐
+│ ✅ Frontend: Completamente impl│
+│ Interfaz completa y funcional  │
+│ Tabla de reportes visible      │
+│ Generación de reportes activa  │
+│                                │
+│ ✅ Backend: Funcional          │
+│ 5 endpoints activos            │
+│                                │
+│ ✅ BD: Reportes generados      │
+│ Datos almacenados             │
+└────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 ESTADO FINAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BACKEND:          ✅ COMPLETADO
+FRONTEND:         ✅ COMPLETADO
+BASE DE DATOS:    ✅ OPERACIONAL
+INTEGRACIÓN:      ✅ VALIDADA
+DOCUMENTACIÓN:    ✅ COMPLETA
+PRUEBAS:          ✅ PASADAS
+VISUALIZACIÓN:    ✅ VISIBLE EN UI
+
+🟢 CU26 - REPORTE FINANCIERO: 100% OPERATIVO
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RESPUESTA A TU PREGUNTA:
+
+"¿Por qué no está visualizado en el frontend y backend?"
+
+✅ AHORA SÍ ESTÁ:
+   • Backend: Completamente funcional
+   • Frontend: Completamente implementado
+   • Visible: En interfaz de usuario
+   • Operativo: Listo para usar
+
+Navega a /reportes y verás el módulo completo con formulario,
+tabla de reportes y todas las acciones disponibles. 🎉
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Fecha: 26 de noviembre de 2025
+Iteración: 2 (Primera = Backend, Segunda = Frontend)
+Versión: 1.0 Completa
+Status: ✅ PRODUCCIÓN
