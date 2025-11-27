@@ -12,6 +12,8 @@ from .serializers import (
     ReporteDefaultSerializer,
     MetaReporteSerializer
 )
+from .auditoria import registrar_accion
+from seguridad_y_personal.models import Usuario
 
 
 class ReporteFinancieroViewSet(viewsets.ModelViewSet):
@@ -26,6 +28,15 @@ class ReporteFinancieroViewSet(viewsets.ModelViewSet):
     search_fields = ['titulo', 'estado']
     ordering_fields = ['fecha_creacion', 'fecha_inicio', 'fecha_fin', 'balance_neto']
     ordering = ['-fecha_creacion']
+    
+    def _get_client_ip(self, request):
+        """Obtiene la IP del cliente"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
     
     @action(detail=False, methods=['post'])
     def generar_reporte(self, request):
@@ -76,11 +87,54 @@ class ReporteFinancieroViewSet(viewsets.ModelViewSet):
             try:
                 reporte.generar_reporte()
                 serializer = self.get_serializer(reporte)
+                
+                # Registrar en bitácora
+                try:
+                    usuario = None
+                    if request.user and request.user.is_authenticated:
+                        usuario = Usuario.objects.filter(user=request.user).first()
+                    
+                    registrar_accion(
+                        usuario=usuario,
+                        tipo_accion='crear',
+                        modulo='reportes',
+                        objeto_tipo='ReporteFinanciero',
+                        objeto_id=reporte.id_reporte,
+                        descripcion=f'Se generó reporte financiero: {titulo}',
+                        datos_nuevos={'titulo': titulo, 'fecha_inicio': str(fecha_inicio), 'fecha_fin': str(fecha_fin)},
+                        estado='exitosa',
+                        direccion_ip=self._get_client_ip(request),
+                        user_agent=request.META.get('HTTP_USER_AGENT', '')
+                    )
+                except Exception as audit_error:
+                    pass  # No romper si falla la auditoría
+                
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             
             except ValueError as e:
                 # No hay datos disponibles para el periodo
                 serializer = self.get_serializer(reporte)
+                
+                # Registrar error en bitácora
+                try:
+                    usuario = None
+                    if request.user and request.user.is_authenticated:
+                        usuario = Usuario.objects.filter(user=request.user).first()
+                    
+                    registrar_accion(
+                        usuario=usuario,
+                        tipo_accion='crear',
+                        modulo='reportes',
+                        objeto_tipo='ReporteFinanciero',
+                        descripcion=f'Intento de generar reporte sin datos',
+                        estado='advertencia',
+                        mensaje_error=str(e),
+                        direccion_ip=self._get_client_ip(request),
+                        user_agent=request.META.get('HTTP_USER_AGENT', '')
+                    )
+                except Exception as audit_error:
+                    pass
+                
                 return Response(
                     {
                         'warning': str(e),
