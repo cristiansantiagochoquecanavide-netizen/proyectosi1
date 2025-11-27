@@ -76,6 +76,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'reportes.middleware.AuditoriaMiddleware',  # Auditoría de acciones
+    'backend.cors_middleware.CustomCORSMiddleware',  # CORS personalizado al final
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -195,17 +196,48 @@ _CORS_ORIGINS_ENV = os.getenv('CORS_ALLOWED_ORIGINS', '')
 if _CORS_ORIGINS_ENV:
     CORS_ALLOWED_ORIGINS = [o.strip() for o in _CORS_ORIGINS_ENV.split(',') if o.strip()]
 else:
-    # Valores por defecto para desarrollo local
+    # Valores por defecto para desarrollo local - Permitir todos los localhost
     CORS_ALLOWED_ORIGINS = [
         'http://localhost:5173',
         'http://127.0.0.1:5173',
         'http://localhost:5174',
         'http://127.0.0.1:5174',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
         'https://consultoriodental-cgik.onrender.com'
     ]
 
+# En desarrollo, permitir todas las direcciones localhost
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = False
+    # Esto asegura que los preflight requests funcionen
+    CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken', 'Content-Disposition']
+    CORS_ALLOW_HEADERS = [
+        'accept',
+        'accept-encoding',
+        'authorization',
+        'content-type',
+        'dnt',
+        'origin',
+        'user-agent',
+        'x-csrftoken',
+        'x-requested-with',
+        'cache-control',
+    ]
+    
 # Permitir cookies en peticiones CORS (necesario para sesiones)
 CORS_ALLOW_CREDENTIALS = True
+
+# Permitir métodos HTTP específicos
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'HEAD',
+]
 
 # Configuración de cookies de sesión para cross-origin (producción)
 # Permite que las cookies funcionen entre dominios diferentes en Render

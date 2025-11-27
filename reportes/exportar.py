@@ -43,13 +43,27 @@ def exportar_citas_a_excel(citas):
     
     # Datos
     for row, cita in enumerate(citas, 2):
-        data = [
-            cita.get('id_cita', ''),
-            cita.get('fecha', ''),
-            cita.get('id_paciente', {}).get('nombre', '') if isinstance(cita.get('id_paciente'), dict) else cita.get('id_paciente', ''),
-            cita.get('id_odontologo', {}).get('nombre', '') if isinstance(cita.get('id_odontologo'), dict) else cita.get('id_odontologo', ''),
-            cita.get('estado', ''),
-        ]
+        # Extraer datos de forma segura
+        cita_id = cita.get('id_cita', '')
+        fecha = cita.get('fecha', '')
+        
+        # Manejo de paciente (puede ser dict o int)
+        paciente_data = cita.get('id_paciente', {})
+        if isinstance(paciente_data, dict):
+            paciente = paciente_data.get('nombre', '')
+        else:
+            paciente = str(paciente_data) if paciente_data else ''
+        
+        # Manejo de odontólogo (puede ser dict o int)
+        odontologo_data = cita.get('id_odontologo', {})
+        if isinstance(odontologo_data, dict):
+            odontologo = odontologo_data.get('nombre', '')
+        else:
+            odontologo = str(odontologo_data) if odontologo_data else ''
+        
+        estado = cita.get('estado', '')
+        
+        data = [cita_id, fecha, paciente, odontologo, estado]
         for col, value in enumerate(data, 1):
             cell = ws.cell(row=row, column=col, value=value)
             cell.border = border
@@ -96,15 +110,29 @@ def exportar_atenciones_a_excel(atenciones):
     
     # Datos
     for row, atencion in enumerate(atenciones, 2):
-        data = [
-            atencion.get('id_atencion', ''),
-            atencion.get('id_paciente', {}).get('nombre', '') if isinstance(atencion.get('id_paciente'), dict) else atencion.get('id_paciente', ''),
-            atencion.get('id_odontologo', {}).get('nombre', '') if isinstance(atencion.get('id_odontologo'), dict) else atencion.get('id_odontologo', ''),
-            atencion.get('fecha_inicio', ''),
-            atencion.get('fecha_fin', ''),
-            atencion.get('estado', ''),
-            atencion.get('observaciones_generales', '')[:50] if atencion.get('observaciones_generales') else '',
-        ]
+        # Extraer datos de forma segura
+        atencion_id = atencion.get('id_atencion', '')
+        
+        # Manejo de paciente (puede ser dict o int)
+        paciente_data = atencion.get('id_paciente', {})
+        if isinstance(paciente_data, dict):
+            paciente = paciente_data.get('nombre', '')
+        else:
+            paciente = str(paciente_data) if paciente_data else ''
+        
+        # Manejo de odontólogo (puede ser dict o int)
+        odontologo_data = atencion.get('id_odontologo', {})
+        if isinstance(odontologo_data, dict):
+            odontologo = odontologo_data.get('nombre', '')
+        else:
+            odontologo = str(odontologo_data) if odontologo_data else ''
+        
+        fecha_inicio = atencion.get('fecha_inicio', '')
+        fecha_fin = atencion.get('fecha_fin', '')
+        estado = atencion.get('estado', '')
+        observaciones = str(atencion.get('observaciones_generales', ''))[:50] if atencion.get('observaciones_generales') else ''
+        
+        data = [atencion_id, paciente, odontologo, fecha_inicio, fecha_fin, estado, observaciones]
         for col, value in enumerate(data, 1):
             cell = ws.cell(row=row, column=col, value=value)
             cell.border = border

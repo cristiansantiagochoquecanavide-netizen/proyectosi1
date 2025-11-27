@@ -6,6 +6,8 @@ from django.db.models import Q
 from django.http import FileResponse
 from datetime import datetime
 from decimal import Decimal
+from django.views.decorators.http import require_http_methods
+from functools import wraps
 from .models import ReporteFinanciero, ReporteClinico, ReporteDefault, MetaReporte
 from .serializers import (
     ReporteFinancieroSerializer,
@@ -22,6 +24,25 @@ from .exportar import (
 from seguridad_y_personal.models import Usuario
 from citas.models import Cita
 from atencion.models import Atencion
+
+
+def add_cors_headers(view_func):
+    """Decorador para añadir headers CORS a una vista"""
+    @wraps(view_func)
+    def wrapper(self, request, *args, **kwargs):
+        if request.method == 'OPTIONS':
+            response = Response()
+            response['Access-Control-Allow-Origin'] = '*'
+            response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
+        
+        response = view_func(self, request, *args, **kwargs)
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Credentials'] = 'true'
+        return response
+    
+    return wrapper
 
 
 class ReporteFinancieroViewSet(viewsets.ModelViewSet):
@@ -323,228 +344,309 @@ class ReporteClinicoViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get', 'options'])
     def descargar_citas_excel(self, request):
         """Descarga todas las citas en formato Excel"""
-        try:
-            citas = Cita.objects.all().values('id_cita', 'fecha', 'id_paciente', 'id_odontologo', 'estado')
-            citas_list = []
-            for cita in citas:
-                cita_dict = dict(cita)
-                # Obtener nombre del paciente
-                if cita['id_paciente']:
-                    try:
-                        from pacientes.models import Paciente
-                        paciente = Paciente.objects.get(id_paciente=cita['id_paciente'])
-                        cita_dict['id_paciente'] = {'nombre': paciente.nombre}
-                    except:
-                        cita_dict['id_paciente'] = cita['id_paciente']
-                # Obtener nombre del odontólogo
-                if cita['id_odontologo']:
-                    try:
-                        from citas.models import Odontologo
-                        odontologo = Odontologo.objects.get(id_odontologo=cita['id_odontologo'])
-                        cita_dict['id_odontologo'] = {'nombre': odontologo.nombre}
-                    except:
-                        cita_dict['id_odontologo'] = cita['id_odontologo']
-                citas_list.append(cita_dict)
+        # Manejar preflight OPTIONS
+        if request.method == 'OPTIONS':
+            response = Response(status=200)
+            response['Access-Control-Allow-Origin'] = '*'
+            response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            response['Access-Control-Allow-Headers'] = 'authorization, content-type, accept'
+            response['Access-Control-Allow-Credentials'] = 'true'
+            return response
             
-            file_obj = exportar_citas_a_excel(citas_list)
-            return FileResponse(
+        try:
+            # Obtener citas con sus relaciones
+            citas_qs = Cita.objects.select_related('id_paciente', 'id_odontologo').all()
+            
+            # Construir lista de diccionarios
+            citas_data = []
+            for cita in citas_qs:
+                cita_data = {
+                    'id_cita': cita.id_cita,
+                    'fecha': str(cita.fecha),
+                    'id_paciente': {
+                        'nombre': cita.id_paciente.nombre if cita.id_paciente else ''
+                    } if cita.id_paciente else '',
+                    'id_odontologo': {
+                        'nombre': cita.id_odontologo.nombre if cita.id_odontologo else ''
+                    } if cita.id_odontologo else '',
+                    'estado': cita.estado,
+                }
+                citas_data.append(cita_data)
+            
+            file_obj = exportar_citas_a_excel(citas_data)
+            file_response = FileResponse(
                 file_obj,
                 as_attachment=True,
                 filename=f'citas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
             )
+            # Añadir headers CORS manualmente
+            file_response['Access-Control-Allow-Origin'] = '*'
+            file_response['Access-Control-Allow-Credentials'] = 'true'
+            file_response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            file_response['Access-Control-Allow-Headers'] = 'authorization, content-type, accept'
+            return file_response
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return Response(
                 {'error': f'Error al descargar citas: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get', 'options'])
     def descargar_atenciones_excel(self, request):
         """Descarga todas las atenciones en formato Excel"""
-        try:
-            atenciones = Atencion.objects.all().values('id_atencion', 'id_paciente', 'id_odontologo', 'fecha_inicio', 'fecha_fin', 'estado', 'observaciones_generales')
-            atenciones_list = []
-            for atencion in atenciones:
-                atencion_dict = dict(atencion)
-                # Obtener nombre del paciente
-                if atencion['id_paciente']:
-                    try:
-                        from pacientes.models import Paciente
-                        paciente = Paciente.objects.get(id_paciente=atencion['id_paciente'])
-                        atencion_dict['id_paciente'] = {'nombre': paciente.nombre}
-                    except:
-                        atencion_dict['id_paciente'] = atencion['id_paciente']
-                # Obtener nombre del odontólogo
-                if atencion['id_odontologo']:
-                    try:
-                        odontologo = Usuario.objects.get(id=atencion['id_odontologo'])
-                        atencion_dict['id_odontologo'] = {'nombre': odontologo.first_name + ' ' + odontologo.last_name}
-                    except:
-                        atencion_dict['id_odontologo'] = atencion['id_odontologo']
-                atenciones_list.append(atencion_dict)
+        # Manejar preflight OPTIONS
+        if request.method == 'OPTIONS':
+            response = Response(status=200)
+            response['Access-Control-Allow-Origin'] = '*'
+            response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            response['Access-Control-Allow-Headers'] = 'authorization, content-type, accept'
+            response['Access-Control-Allow-Credentials'] = 'true'
+            return response
             
-            file_obj = exportar_atenciones_a_excel(atenciones_list)
-            return FileResponse(
+        try:
+            # Obtener atenciones con sus relaciones
+            atenciones_qs = Atencion.objects.select_related('id_paciente', 'id_odontologo').all()
+            
+            # Construir lista de diccionarios
+            atenciones_data = []
+            for atencion in atenciones_qs:
+                atencion_data = {
+                    'id_atencion': atencion.id_atencion,
+                    'id_paciente': {
+                        'nombre': atencion.id_paciente.nombre if atencion.id_paciente else ''
+                    } if atencion.id_paciente else '',
+                    'id_odontologo': {
+                        'nombre': atencion.id_odontologo.nombre if atencion.id_odontologo else ''
+                    } if atencion.id_odontologo else '',
+                    'fecha_inicio': str(atencion.fecha_inicio),
+                    'fecha_fin': str(atencion.fecha_fin) if atencion.fecha_fin else '',
+                    'estado': atencion.estado,
+                    'observaciones_generales': atencion.observaciones_generales or '',
+                }
+                atenciones_data.append(atencion_data)
+            
+            file_obj = exportar_atenciones_a_excel(atenciones_data)
+            file_response = FileResponse(
                 file_obj,
                 as_attachment=True,
                 filename=f'atenciones_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
             )
+            # Añadir headers CORS manualmente
+            file_response['Access-Control-Allow-Origin'] = '*'
+            file_response['Access-Control-Allow-Credentials'] = 'true'
+            file_response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            file_response['Access-Control-Allow-Headers'] = 'authorization, content-type, accept'
+            return file_response
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return Response(
                 {'error': f'Error al descargar atenciones: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get', 'options'])
     def descargar_citas_word(self, request):
         """Descarga todas las citas en formato Word"""
-        try:
-            citas = Cita.objects.all().values('id_cita', 'fecha', 'id_paciente', 'id_odontologo', 'estado')
-            citas_list = []
-            for cita in citas:
-                cita_dict = dict(cita)
-                # Obtener nombre del paciente
-                if cita['id_paciente']:
-                    try:
-                        from pacientes.models import Paciente
-                        paciente = Paciente.objects.get(id_paciente=cita['id_paciente'])
-                        cita_dict['id_paciente'] = {'nombre': paciente.nombre}
-                    except:
-                        cita_dict['id_paciente'] = cita['id_paciente']
-                # Obtener nombre del odontólogo
-                if cita['id_odontologo']:
-                    try:
-                        from citas.models import Odontologo
-                        odontologo = Odontologo.objects.get(id_odontologo=cita['id_odontologo'])
-                        cita_dict['id_odontologo'] = {'nombre': odontologo.nombre}
-                    except:
-                        cita_dict['id_odontologo'] = cita['id_odontologo']
-                citas_list.append(cita_dict)
+        # Manejar preflight OPTIONS
+        if request.method == 'OPTIONS':
+            response = Response(status=200)
+            response['Access-Control-Allow-Origin'] = '*'
+            response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            response['Access-Control-Allow-Headers'] = 'authorization, content-type, accept'
+            response['Access-Control-Allow-Credentials'] = 'true'
+            return response
             
-            file_obj = exportar_citas_a_word(citas_list)
-            return FileResponse(
+        try:
+            citas_qs = Cita.objects.select_related('id_paciente', 'id_odontologo').all()
+            citas_data = []
+            for cita in citas_qs:
+                cita_data = {
+                    'id_cita': cita.id_cita,
+                    'fecha': str(cita.fecha),
+                    'id_paciente': {
+                        'nombre': cita.id_paciente.nombre if cita.id_paciente else ''
+                    } if cita.id_paciente else '',
+                    'id_odontologo': {
+                        'nombre': cita.id_odontologo.nombre if cita.id_odontologo else ''
+                    } if cita.id_odontologo else '',
+                    'estado': cita.estado,
+                }
+                citas_data.append(cita_data)
+            
+            file_obj = exportar_citas_a_word(citas_data)
+            file_response = FileResponse(
                 file_obj,
                 as_attachment=True,
                 filename=f'citas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.docx'
             )
+            # Añadir headers CORS manualmente
+            file_response['Access-Control-Allow-Origin'] = '*'
+            file_response['Access-Control-Allow-Credentials'] = 'true'
+            file_response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            file_response['Access-Control-Allow-Headers'] = 'authorization, content-type, accept'
+            return file_response
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return Response(
                 {'error': f'Error al descargar citas: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get', 'options'])
     def descargar_atenciones_word(self, request):
         """Descarga todas las atenciones en formato Word"""
-        try:
-            atenciones = Atencion.objects.all().values('id_atencion', 'id_paciente', 'id_odontologo', 'fecha_inicio', 'fecha_fin', 'estado', 'observaciones_generales')
-            atenciones_list = []
-            for atencion in atenciones:
-                atencion_dict = dict(atencion)
-                # Obtener nombre del paciente
-                if atencion['id_paciente']:
-                    try:
-                        from pacientes.models import Paciente
-                        paciente = Paciente.objects.get(id_paciente=atencion['id_paciente'])
-                        atencion_dict['id_paciente'] = {'nombre': paciente.nombre}
-                    except:
-                        atencion_dict['id_paciente'] = atencion['id_paciente']
-                # Obtener nombre del odontólogo
-                if atencion['id_odontologo']:
-                    try:
-                        odontologo = Usuario.objects.get(id=atencion['id_odontologo'])
-                        atencion_dict['id_odontologo'] = {'nombre': odontologo.first_name + ' ' + odontologo.last_name}
-                    except:
-                        atencion_dict['id_odontologo'] = atencion['id_odontologo']
-                atenciones_list.append(atencion_dict)
+        # Manejar preflight OPTIONS
+        if request.method == 'OPTIONS':
+            response = Response(status=200)
+            response['Access-Control-Allow-Origin'] = '*'
+            response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            response['Access-Control-Allow-Headers'] = 'authorization, content-type, accept'
+            response['Access-Control-Allow-Credentials'] = 'true'
+            return response
             
-            file_obj = exportar_atenciones_a_word(atenciones_list)
-            return FileResponse(
+        try:
+            atenciones_qs = Atencion.objects.select_related('id_paciente', 'id_odontologo').all()
+            atenciones_data = []
+            for atencion in atenciones_qs:
+                atencion_data = {
+                    'id_atencion': atencion.id_atencion,
+                    'id_paciente': {
+                        'nombre': atencion.id_paciente.nombre if atencion.id_paciente else ''
+                    } if atencion.id_paciente else '',
+                    'id_odontologo': {
+                        'nombre': atencion.id_odontologo.nombre if atencion.id_odontologo else ''
+                    } if atencion.id_odontologo else '',
+                    'fecha_inicio': str(atencion.fecha_inicio),
+                    'fecha_fin': str(atencion.fecha_fin) if atencion.fecha_fin else '',
+                    'estado': atencion.estado,
+                    'observaciones_generales': atencion.observaciones_generales or ''
+                }
+                atenciones_data.append(atencion_data)
+            
+            file_obj = exportar_atenciones_a_word(atenciones_data)
+            file_response = FileResponse(
                 file_obj,
                 as_attachment=True,
                 filename=f'atenciones_{datetime.now().strftime("%Y%m%d_%H%M%S")}.docx'
             )
+            # Añadir headers CORS manualmente
+            file_response['Access-Control-Allow-Origin'] = '*'
+            file_response['Access-Control-Allow-Credentials'] = 'true'
+            file_response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            file_response['Access-Control-Allow-Headers'] = 'authorization, content-type, accept'
+            return file_response
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return Response(
                 {'error': f'Error al descargar atenciones: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get', 'options'])
     def descargar_citas_pdf(self, request):
         """Descarga todas las citas en formato PDF"""
-        try:
-            citas = Cita.objects.all().values('id_cita', 'fecha', 'id_paciente', 'id_odontologo', 'estado')
-            citas_list = []
-            for cita in citas:
-                cita_dict = dict(cita)
-                # Obtener nombre del paciente
-                if cita['id_paciente']:
-                    try:
-                        from pacientes.models import Paciente
-                        paciente = Paciente.objects.get(id_paciente=cita['id_paciente'])
-                        cita_dict['id_paciente'] = {'nombre': paciente.nombre}
-                    except:
-                        cita_dict['id_paciente'] = cita['id_paciente']
-                # Obtener nombre del odontólogo
-                if cita['id_odontologo']:
-                    try:
-                        from citas.models import Odontologo
-                        odontologo = Odontologo.objects.get(id_odontologo=cita['id_odontologo'])
-                        cita_dict['id_odontologo'] = {'nombre': odontologo.nombre}
-                    except:
-                        cita_dict['id_odontologo'] = cita['id_odontologo']
-                citas_list.append(cita_dict)
+        # Manejar preflight OPTIONS
+        if request.method == 'OPTIONS':
+            response = Response(status=200)
+            response['Access-Control-Allow-Origin'] = '*'
+            response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            response['Access-Control-Allow-Headers'] = 'authorization, content-type, accept'
+            response['Access-Control-Allow-Credentials'] = 'true'
+            return response
             
-            file_obj = exportar_citas_a_pdf(citas_list)
-            return FileResponse(
+        try:
+            citas_qs = Cita.objects.select_related('id_paciente', 'id_odontologo').all()
+            citas_data = []
+            for cita in citas_qs:
+                cita_data = {
+                    'id_cita': cita.id_cita,
+                    'fecha': str(cita.fecha),
+                    'id_paciente': {
+                        'nombre': cita.id_paciente.nombre if cita.id_paciente else ''
+                    } if cita.id_paciente else '',
+                    'id_odontologo': {
+                        'nombre': cita.id_odontologo.nombre if cita.id_odontologo else ''
+                    } if cita.id_odontologo else '',
+                    'estado': cita.estado,
+                }
+                citas_data.append(cita_data)
+            
+            file_obj = exportar_citas_a_pdf(citas_data)
+            file_response = FileResponse(
                 file_obj,
                 as_attachment=True,
                 filename=f'citas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf',
                 content_type='application/pdf'
             )
+            # Añadir headers CORS manualmente
+            file_response['Access-Control-Allow-Origin'] = '*'
+            file_response['Access-Control-Allow-Credentials'] = 'true'
+            file_response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            file_response['Access-Control-Allow-Headers'] = 'authorization, content-type, accept'
+            return file_response
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return Response(
                 {'error': f'Error al descargar citas: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get', 'options'])
     def descargar_atenciones_pdf(self, request):
         """Descarga todas las atenciones en formato PDF"""
-        try:
-            atenciones = Atencion.objects.all().values('id_atencion', 'id_paciente', 'id_odontologo', 'fecha_inicio', 'fecha_fin', 'estado', 'observaciones_generales')
-            atenciones_list = []
-            for atencion in atenciones:
-                atencion_dict = dict(atencion)
-                # Obtener nombre del paciente
-                if atencion['id_paciente']:
-                    try:
-                        from pacientes.models import Paciente
-                        paciente = Paciente.objects.get(id_paciente=atencion['id_paciente'])
-                        atencion_dict['id_paciente'] = {'nombre': paciente.nombre}
-                    except:
-                        atencion_dict['id_paciente'] = atencion['id_paciente']
-                # Obtener nombre del odontólogo
-                if atencion['id_odontologo']:
-                    try:
-                        odontologo = Usuario.objects.get(id=atencion['id_odontologo'])
-                        atencion_dict['id_odontologo'] = {'nombre': odontologo.first_name + ' ' + odontologo.last_name}
-                    except:
-                        atencion_dict['id_odontologo'] = atencion['id_odontologo']
-                atenciones_list.append(atencion_dict)
+        # Manejar preflight OPTIONS
+        if request.method == 'OPTIONS':
+            response = Response(status=200)
+            response['Access-Control-Allow-Origin'] = '*'
+            response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            response['Access-Control-Allow-Headers'] = 'authorization, content-type, accept'
+            response['Access-Control-Allow-Credentials'] = 'true'
+            return response
             
-            file_obj = exportar_atenciones_a_pdf(atenciones_list)
-            return FileResponse(
+        try:
+            atenciones_qs = Atencion.objects.select_related('id_paciente', 'id_odontologo').all()
+            atenciones_data = []
+            for atencion in atenciones_qs:
+                atencion_data = {
+                    'id_atencion': atencion.id_atencion,
+                    'id_paciente': {
+                        'nombre': atencion.id_paciente.nombre if atencion.id_paciente else ''
+                    } if atencion.id_paciente else '',
+                    'id_odontologo': {
+                        'nombre': atencion.id_odontologo.nombre if atencion.id_odontologo else ''
+                    } if atencion.id_odontologo else '',
+                    'fecha_inicio': str(atencion.fecha_inicio),
+                    'fecha_fin': str(atencion.fecha_fin) if atencion.fecha_fin else '',
+                    'estado': atencion.estado,
+                    'observaciones_generales': atencion.observaciones_generales or ''
+                }
+                atenciones_data.append(atencion_data)
+            
+            file_obj = exportar_atenciones_a_pdf(atenciones_data)
+            file_response = FileResponse(
                 file_obj,
                 as_attachment=True,
                 filename=f'atenciones_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf',
                 content_type='application/pdf'
             )
+            # Añadir headers CORS manualmente
+            file_response['Access-Control-Allow-Origin'] = '*'
+            file_response['Access-Control-Allow-Credentials'] = 'true'
+            file_response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            file_response['Access-Control-Allow-Headers'] = 'authorization, content-type, accept'
+            return file_response
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return Response(
                 {'error': f'Error al descargar atenciones: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR

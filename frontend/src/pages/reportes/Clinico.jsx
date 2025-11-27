@@ -17,11 +17,7 @@ import {
   CardContent,
   Typography,
   Chip,
-  Button,
-  Menu,
-  MenuItem,
 } from '@mui/material';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { apiGet } from '../../lib/api';
 
 export default function ReportesClinico() {
@@ -30,9 +26,6 @@ export default function ReportesClinico() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [tabValue, setTabValue] = useState(0);
-  const [anchorCitasEl, setAnchorCitasEl] = useState(null);
-  const [anchorAtencionesEl, setAnchorAtencionesEl] = useState(null);
-  const [descargando, setDescargando] = useState(false);
 
   useEffect(() => {
     cargarDatos();
@@ -75,59 +68,6 @@ export default function ReportesClinico() {
     return new Date(fecha).toLocaleString('es-ES');
   };
 
-  const descargarArchivo = async (endpoint, nombreArchivo) => {
-    setDescargando(true);
-    try {
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al descargar');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = nombreArchivo;
-      link.click();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      setError('Error al descargar el archivo');
-      console.error(err);
-    } finally {
-      setDescargando(false);
-    }
-  };
-
-  const handleDescargarCitas = (formato) => {
-    const fecha = new Date().toISOString().split('T')[0];
-    if (formato === 'excel') {
-      descargarArchivo('/reportes/clinicos/descargar_citas_excel/', `citas_${fecha}.xlsx`);
-    } else if (formato === 'word') {
-      descargarArchivo('/reportes/clinicos/descargar_citas_word/', `citas_${fecha}.docx`);
-    } else if (formato === 'pdf') {
-      descargarArchivo('/reportes/clinicos/descargar_citas_pdf/', `citas_${fecha}.pdf`);
-    }
-    setAnchorCitasEl(null);
-  };
-
-  const handleDescargarAtenciones = (formato) => {
-    const fecha = new Date().toISOString().split('T')[0];
-    if (formato === 'excel') {
-      descargarArchivo('/reportes/clinicos/descargar_atenciones_excel/', `atenciones_${fecha}.xlsx`);
-    } else if (formato === 'word') {
-      descargarArchivo('/reportes/clinicos/descargar_atenciones_word/', `atenciones_${fecha}.docx`);
-    } else if (formato === 'pdf') {
-      descargarArchivo('/reportes/clinicos/descargar_atenciones_pdf/', `atenciones_${fecha}.pdf`);
-    }
-    setAnchorAtencionesEl(null);
-  };
-
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 3 }}>
@@ -158,31 +98,6 @@ export default function ReportesClinico() {
           {/* Tab 0: Citas */}
           {tabValue === 0 && (
             <>
-              <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<FileDownloadIcon />}
-                  onClick={(e) => setAnchorCitasEl(e.currentTarget)}
-                  disabled={descargando || citas.length === 0}
-                >
-                  Descargar Citas
-                </Button>
-                <Menu
-                  anchorEl={anchorCitasEl}
-                  open={Boolean(anchorCitasEl)}
-                  onClose={() => setAnchorCitasEl(null)}
-                >
-                  <MenuItem onClick={() => handleDescargarCitas('excel')}>
-                    📊 Descargar como Excel
-                  </MenuItem>
-                  <MenuItem onClick={() => handleDescargarCitas('word')}>
-                    📄 Descargar como Word
-                  </MenuItem>
-                  <MenuItem onClick={() => handleDescargarCitas('pdf')}>
-                    📋 Descargar como PDF
-                  </MenuItem>
-                </Menu>
-              </Box>
               <TableContainer component={Paper}>
               <Table size="small">
                 <TableHead>
@@ -232,31 +147,6 @@ export default function ReportesClinico() {
           {/* Tab 1: Atenciones */}
           {tabValue === 1 && (
             <>
-              <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<FileDownloadIcon />}
-                  onClick={(e) => setAnchorAtencionesEl(e.currentTarget)}
-                  disabled={descargando || atenciones.length === 0}
-                >
-                  Descargar Atenciones
-                </Button>
-                <Menu
-                  anchorEl={anchorAtencionesEl}
-                  open={Boolean(anchorAtencionesEl)}
-                  onClose={() => setAnchorAtencionesEl(null)}
-                >
-                  <MenuItem onClick={() => handleDescargarAtenciones('excel')}>
-                    📊 Descargar como Excel
-                  </MenuItem>
-                  <MenuItem onClick={() => handleDescargarAtenciones('word')}>
-                    📄 Descargar como Word
-                  </MenuItem>
-                  <MenuItem onClick={() => handleDescargarAtenciones('pdf')}>
-                    📋 Descargar como PDF
-                  </MenuItem>
-                </Menu>
-              </Box>
               <TableContainer component={Paper}>
               <Table size="small">
                 <TableHead>
