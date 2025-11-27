@@ -17,8 +17,10 @@ import {
   CardContent,
   Typography,
   Chip,
+  Button,
 } from '@mui/material';
 import { apiGet } from '../../lib/api';
+import EvaluacionSatisfaccionDialog from '../../components/citas/EvaluacionSatisfaccionDialog';
 
 export default function ReportesClinico() {
   const [citas, setCitas] = useState([]);
@@ -26,6 +28,8 @@ export default function ReportesClinico() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [tabValue, setTabValue] = useState(0);
+  const [openEvalDialog, setOpenEvalDialog] = useState(false);
+  const [citaSeleccionada, setCitaSeleccionada] = useState(null);
 
   useEffect(() => {
     cargarDatos();
@@ -107,12 +111,13 @@ export default function ReportesClinico() {
                     <TableCell><strong>Paciente</strong></TableCell>
                     <TableCell><strong>Odontólogo</strong></TableCell>
                     <TableCell><strong>Estado</strong></TableCell>
+                    <TableCell><strong>Acciones</strong></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {citas.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} align="center">
+                      <TableCell colSpan={6} align="center">
                         No hay citas registradas
                       </TableCell>
                     </TableRow>
@@ -134,6 +139,18 @@ export default function ReportesClinico() {
                             color={getColorEstado(cita.estado)}
                             variant="outlined"
                           />
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => {
+                              setCitaSeleccionada(cita);
+                              setOpenEvalDialog(true);
+                            }}
+                          >
+                            Evaluar
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
@@ -246,6 +263,24 @@ export default function ReportesClinico() {
             </Card>
           </Box>
         </>
+      )}
+
+      {/* Dialog de Evaluación de Satisfacción */}
+      {citaSeleccionada && (
+        <EvaluacionSatisfaccionDialog
+          open={openEvalDialog}
+          onClose={() => {
+            setOpenEvalDialog(false);
+            setCitaSeleccionada(null);
+          }}
+          citaId={citaSeleccionada.id_cita}
+          pacienteNombre={citaSeleccionada.id_paciente?.nombre || citaSeleccionada.id_paciente || 'Paciente'}
+          onSuccess={() => {
+            cargarDatos();
+            setOpenEvalDialog(false);
+            setCitaSeleccionada(null);
+          }}
+        />
       )}
     </Container>
   );

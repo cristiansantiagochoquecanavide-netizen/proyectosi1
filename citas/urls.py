@@ -1,12 +1,13 @@
 from django.urls import path, include  # Sistema de rutas
 from rest_framework.routers import DefaultRouter
 from . import views  # Vistas locales
-from .views import OdontologoViewSet, CitaViewSet, DisponibilidadViewSet
+from .views import OdontologoViewSet, CitaViewSet, DisponibilidadViewSet, EvaluacionSatisfaccionViewSet
 
 router = DefaultRouter()
 router.register(r'odontologos', OdontologoViewSet)
 router.register(r'citas', CitaViewSet)
 router.register(r'disponibilidades', DisponibilidadViewSet)
+router.register(r'evaluaciones-satisfaccion', EvaluacionSatisfaccionViewSet)
 
 urlpatterns = [  # Rutas de citas
     path('listar/', views.listado_citas, name='listado_citas'),  # Listar

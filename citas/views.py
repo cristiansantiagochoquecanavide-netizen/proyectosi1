@@ -6,8 +6,8 @@ from datetime import timedelta  # Para validar rangos de 1 hora
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Odontologo, Cita, Disponibilidad
-from .serializers import OdontologoSerializer, CitaSerializer, DisponibilidadSerializer
+from .models import Odontologo, Cita, Disponibilidad, EvaluacionSatisfaccion
+from .serializers import OdontologoSerializer, CitaSerializer, DisponibilidadSerializer, EvaluacionSatisfaccionSerializer
 from seguridad_y_personal.models import Bitacora, Usuario, Rol, UsuarioRol
 from seguridad_y_personal.permissions import RolesPermission
 
@@ -357,3 +357,150 @@ class DisponibilidadViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(disponibilidad)
         return Response(serializer.data)
+
+
+class EvaluacionSatisfaccionViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gestionar las Evaluaciones de Satisfacción del Cliente.
+    
+    Permite crear, actualizar, listar y eliminar evaluaciones de satisfacción
+    asociadas a citas.
+    """
+    queryset = EvaluacionSatisfaccion.objects.all()
+    serializer_class = EvaluacionSatisfaccionSerializer
+    
+    def get_queryset(self):
+        """
+        Filtrar evaluaciones por:
+        - id_cita (opcional)
+        - id_odontologo (opcional)
+        - nivel_satisfaccion (opcional)
+        - rango de fechas (opcional)
+        """
+        queryset = self.queryset
+        
+        id_cita = self.request.query_params.get('id_cita')
+        id_odontologo = self.request.query_params.get('id_odontologo')
+        nivel_satisfaccion = self.request.query_params.get('nivel_satisfaccion')
+        fecha_inicio = self.request.query_params.get('fecha_inicio')
+        fecha_fin = self.request.query_params.get('fecha_fin')
+        
+        if id_cita:
+            queryset = queryset.filter(id_cita=id_cita)
+        if id_odontologo:
+            queryset = queryset.filter(id_odontologo=id_odontologo)
+        if nivel_satisfaccion:
+            queryset = queryset.filter(nivel_satisfaccion=nivel_satisfaccion)
+        if fecha_inicio:
+            queryset = queryset.filter(fecha_registro__gte=fecha_inicio)
+        if fecha_fin:
+            queryset = queryset.filter(fecha_registro__lte=fecha_fin)
+        
+        return queryset.order_by('-fecha_registro')
+    
+    def perform_create(self, serializer):
+        """Guardar evaluación con el odontólogo actual si no se proporciona"""
+        evaluacion = serializer.save()
+        # Registrar en bitácora
+        try:
+            actor = self._actor(self.request)
+            if actor:
+                Bitacora.objects.create(
+                    id_usuario=actor,
+                    accion=f"Creación de evaluación de satisfacción para cita {evaluacion.id_cita.id_cita} - Nivel {evaluacion.nivel_satisfaccion}/5",
+                )
+        except Exception:
+            pass
+    
+    def perform_update(self, serializer):
+        """Actualizar evaluación"""
+        evaluacion = serializer.save()
+        # Registrar en bitácora
+        try:
+            actor = self._actor(self.request)
+            if actor:
+                Bitacora.objects.create(
+                    id_usuario=actor,
+                    accion=f"Actualización de evaluación de satisfacción para cita {evaluacion.id_cita.id_cita} - Nuevo nivel {evaluacion.nivel_satisfaccion}/5",
+                )
+        except Exception:
+            pass
+    
+    @action(detail=False, methods=['get'])
+    def promedio_satisfaccion(self, request):
+        """
+        Obtener el promedio de satisfacción.
+        
+        Parámetros opcionales:
+        - id_odontologo: filtrar por odontólogo
+        - fecha_inicio: desde esta fecha
+        - fecha_fin: hasta esta fecha
+        """
+        queryset = self.get_queryset()
+        
+        if not queryset.exists():
+            return Response({
+                'promedio': 0,
+                'total_evaluaciones': 0,
+                'total_citas': 0,
+                'distribucion': {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+            })
+        
+        # Calcular promedio
+        evaluaciones = queryset.values_list('nivel_satisfaccion', flat=True)
+        promedio = sum(evaluaciones) / len(evaluaciones)
+        
+        # Calcular distribución
+        distribucion = {i: 0 for i in range(1, 6)}
+        for nivel in evaluaciones:
+            distribucion[nivel] += 1
+        
+        return Response({
+            'promedio': round(promedio, 2),
+            'total_evaluaciones': len(evaluaciones),
+            'total_citas': queryset.count(),
+            'distribucion': distribucion
+        })
+    
+    @action(detail=False, methods=['get'])
+    def por_odontologo(self, request):
+        """Obtener evaluaciones agrupadas por odontólogo"""
+        queryset = self.get_queryset()
+        
+        resultado = {}
+        for evaluacion in queryset:
+            odontologo_nombre = evaluacion.id_odontologo.nombre if evaluacion.id_odontologo else "Sin asignar"
+            
+            if odontologo_nombre not in resultado:
+                resultado[odontologo_nombre] = {
+                    'total': 0,
+                    'promedio': 0,
+                    'niveles': {i: 0 for i in range(1, 6)}
+                }
+            
+            resultado[odontologo_nombre]['total'] += 1
+            resultado[odontologo_nombre]['niveles'][evaluacion.nivel_satisfaccion] += 1
+        
+        # Calcular promedios
+        for odontologo, datos in resultado.items():
+            niveles = datos['niveles']
+            suma = sum(nivel * count for nivel, count in niveles.items())
+            datos['promedio'] = round(suma / datos['total'], 2) if datos['total'] > 0 else 0
+        
+        return Response(resultado)
+    
+    @action(detail=True, methods=['get'])
+    def detalle_cita(self, request, pk=None):
+        """Obtener detalles completos de una evaluación"""
+        evaluacion = self.get_object()
+        serializer = self.get_serializer(evaluacion)
+        return Response(serializer.data)
+    
+    def _actor(self, request):
+        """Obtener el usuario actual para auditoría"""
+        try:
+            if request.user.is_authenticated:
+                return Usuario.objects.filter(username=request.user.username).first()
+        except Exception:
+            pass
+        return None

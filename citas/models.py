@@ -52,6 +52,36 @@ class Cita(models.Model):
         return f"Cita de {self.id_paciente.nombre} con {self.id_odontologo.nombre if self.id_odontologo else '-'} - {self.estado}"
 
 
+# Clase para la Evaluación de Satisfacción del Cliente
+# CU: Evaluación de Satisfacción del Cliente
+# - Permite registrar el nivel de satisfacción del cliente después de una cita
+# - Escala de 1-5: 1=Muy Baja Satisfacción, 5=Muy Alta Satisfacción
+class EvaluacionSatisfaccion(models.Model):
+    NIVEL_SATISFACCION_CHOICES = [
+        (1, 'Muy Baja Satisfacción'),
+        (2, 'Baja Satisfacción'),
+        (3, 'Satisfacción Media'),
+        (4, 'Alta Satisfacción'),
+        (5, 'Muy Alta Satisfacción'),
+    ]
+    
+    id_evaluacion = models.AutoField(primary_key=True)
+    id_cita = models.OneToOneField(Cita, on_delete=models.CASCADE, related_name='evaluacion_satisfaccion')
+    nivel_satisfaccion = models.IntegerField(choices=NIVEL_SATISFACCION_CHOICES)  # Escala 1-5
+    observaciones = models.TextField(blank=True, null=True)  # Observaciones opcionales
+    id_odontologo = models.ForeignKey(Odontologo, on_delete=models.SET_NULL, null=True, blank=True)  # Odontólogo que registró
+    fecha_registro = models.DateTimeField(auto_now_add=True)  # Fecha y hora de registro
+    actualizado_en = models.DateTimeField(auto_now=True)  # Fecha y hora de última actualización
+    
+    class Meta:
+        ordering = ['-fecha_registro']
+        verbose_name = 'Evaluación de Satisfacción'
+        verbose_name_plural = 'Evaluaciones de Satisfacción'
+    
+    def __str__(self):
+        return f"Satisfacción de {self.id_cita.id_paciente.nombre} - Nivel {self.nivel_satisfaccion}/5"
+
+
 # Clase para la disponibilidad de los odontólogos
 # CU10: Configurar disponibilidad de odontólogo
 # - Define slots de tiempo disponibles para agenda de citas

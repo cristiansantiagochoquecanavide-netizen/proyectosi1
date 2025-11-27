@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Odontologo, Cita, Disponibilidad
+from .models import Odontologo, Cita, Disponibilidad, EvaluacionSatisfaccion
 
 class OdontologoSerializer(serializers.ModelSerializer):
     # Exponer matriculaProfesional en formato camelCase hacia el frontend
@@ -78,3 +78,26 @@ class DisponibilidadSerializer(serializers.ModelSerializer):
             'odontologo_nombre'
         ]
         read_only_fields = ['id_disponibilidad', 'created_at', 'updated_at']
+
+
+class EvaluacionSatisfaccionSerializer(serializers.ModelSerializer):
+    """Serializer para Evaluación de Satisfacción del Cliente"""
+    nombre_paciente = serializers.CharField(source='id_cita.id_paciente.nombre', read_only=True)
+    nombre_odontologo = serializers.CharField(source='id_odontologo.nombre', read_only=True)
+    nivel_nombre = serializers.CharField(source='get_nivel_satisfaccion_display', read_only=True)
+    
+    class Meta:
+        model = EvaluacionSatisfaccion
+        fields = [
+            'id_evaluacion',
+            'id_cita',
+            'nivel_satisfaccion',
+            'nivel_nombre',
+            'observaciones',
+            'id_odontologo',
+            'nombre_paciente',
+            'nombre_odontologo',
+            'fecha_registro',
+            'actualizado_en',
+        ]
+        read_only_fields = ['id_evaluacion', 'fecha_registro', 'actualizado_en']
