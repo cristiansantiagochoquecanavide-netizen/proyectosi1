@@ -72,23 +72,15 @@ export async function eliminarReporteClinico(id) {
 // ============================================
 
 export async function listarBitacora() {
-  return apiGet('/reportes/default/')
+  return apiGet('/seguridad/api/bitacoras/')
 }
 
-export async function obtenerBitacoraRegistro(id) {
-  return apiGet(`/reportes/default/${id}/`)
-}
-
-export async function obtenerBitacoraUsuario(usuarioId, dias = 30) {
-  const params = new URLSearchParams({
-    usuario_id: usuarioId,
-    dias: dias,
-  })
-  return apiGet(`/reportes/default/por_usuario/?${params}`)
+export async function obtenerBitacoraUsuario(usuarioId) {
+  return apiGet(`/seguridad/api/bitacoras/?id_usuario=${usuarioId}`)
 }
 
 export async function obtenerBitacoraModulo(modulo, tipoAccion = null) {
-  let url = `/reportes/default/por_modulo/?modulo=${modulo}`
+  let url = `/seguridad/api/bitacoras/?modulo=${modulo}`
   if (tipoAccion) {
     url += `&tipo_accion=${tipoAccion}`
   }

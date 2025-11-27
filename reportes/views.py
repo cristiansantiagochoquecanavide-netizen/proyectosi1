@@ -214,14 +214,12 @@ class ReporteClinicoViewSet(viewsets.ModelViewSet):
             "fecha_inicio": "2025-01-01",
             "fecha_fin": "2025-12-31",
             "id_odontologo": 1 (opcional),
-            "tipo_cita": "consulta" (opcional),
             "titulo": "Reporte Clínico 2025" (opcional)
         }
         """
         fecha_inicio = request.data.get('fecha_inicio')
         fecha_fin = request.data.get('fecha_fin')
         id_odontologo = request.data.get('id_odontologo')
-        tipo_cita = request.data.get('tipo_cita', 'todas')
         titulo = request.data.get('titulo', "Reporte Clínico")
         
         if not fecha_inicio or not fecha_fin:
@@ -247,7 +245,6 @@ class ReporteClinicoViewSet(viewsets.ModelViewSet):
                 fecha_inicio=fecha_inicio,
                 fecha_fin=fecha_fin,
                 id_odontologo_id=id_odontologo,
-                tipo_cita=tipo_cita,
                 generado_por=request.user if request.user.is_authenticated else None
             )
             

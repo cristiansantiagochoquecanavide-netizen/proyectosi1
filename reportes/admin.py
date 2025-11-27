@@ -13,7 +13,7 @@ class ReporteFinancieroAdmin(admin.ModelAdmin):
 @admin.register(ReporteClinico)
 class ReporteClinicoAdmin(admin.ModelAdmin):
     list_display = ['id_reporte', 'titulo', 'fecha_inicio', 'fecha_fin', 'total_atenciones', 'estado']
-    list_filter = ['estado', 'tipo_cita', 'fecha_creacion']
+    list_filter = ['estado', 'fecha_creacion', 'id_odontologo']
     search_fields = ['titulo']
     readonly_fields = ['created_at', 'updated_at']
 

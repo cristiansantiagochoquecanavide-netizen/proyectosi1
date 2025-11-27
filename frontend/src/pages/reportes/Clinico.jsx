@@ -35,7 +35,6 @@ export default function ReportesClinico() {
   const [reporteSeleccionado, setReporteSeleccionado] = useState(null);
   const [error, setError] = useState(null);
   const [filtros, setFiltros] = useState({
-    tipo_cita: 'todas',
     id_odontologo: '',
   });
   const [formData, setFormData] = useState({
@@ -43,7 +42,6 @@ export default function ReportesClinico() {
     fecha_inicio: '',
     fecha_fin: '',
     id_odontologo: '',
-    tipo_cita: 'todas',
   });
 
   useEffect(() => {
@@ -77,7 +75,6 @@ export default function ReportesClinico() {
         fecha_inicio: formData.fecha_inicio,
         fecha_fin: formData.fecha_fin,
         id_odontologo: formData.id_odontologo ? parseInt(formData.id_odontologo) : null,
-        tipo_cita: formData.tipo_cita,
       };
 
       const response = await generarReporteClinico(datos);
@@ -88,7 +85,6 @@ export default function ReportesClinico() {
         fecha_inicio: '',
         fecha_fin: '',
         id_odontologo: '',
-        tipo_cita: 'todas',
       });
       setError(null);
     } catch (err) {
@@ -252,20 +248,6 @@ export default function ReportesClinico() {
               onChange={(e) => setFormData({ ...formData, id_odontologo: e.target.value })}
               fullWidth
             />
-            <FormControl fullWidth>
-              <InputLabel>Tipo de Cita</InputLabel>
-              <Select
-                value={formData.tipo_cita}
-                onChange={(e) => setFormData({ ...formData, tipo_cita: e.target.value })}
-                label="Tipo de Cita"
-              >
-                <MenuItem value="todas">Todas</MenuItem>
-                <MenuItem value="consulta">Consulta</MenuItem>
-                <MenuItem value="procedimiento">Procedimiento</MenuItem>
-                <MenuItem value="seguimiento">Seguimiento</MenuItem>
-                <MenuItem value="emergencia">Emergencia</MenuItem>
-              </Select>
-            </FormControl>
           </Box>
         </DialogContent>
         <DialogActions>

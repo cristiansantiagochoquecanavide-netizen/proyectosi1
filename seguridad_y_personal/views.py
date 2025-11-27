@@ -209,7 +209,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     serializer_class = UsuarioSerializer
     permission_classes = [RolesPermission]
     # Acciones sin autenticación (login/logout/me usan sesión propia)
-    allow_unauthenticated_actions = ['login', 'logout', 'me']
+    allow_unauthenticated_actions = ['login', 'logout', 'me', 'listar_usuarios']
     roles_per_action = {
         # CU23
         'recepcionistas': ['administrador'],
@@ -327,6 +327,16 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         logout(request)
         request.session.flush()
         return Response({'message': 'Sesión cerrada correctamente'})
+
+    @action(detail=False, methods=['get'])
+    def listar_usuarios(self, request):
+        """
+        Acción para listar todos los usuarios sin restricción de autenticación.
+        Usada por el frontend para filtros de bitácora.
+        """
+        usuarios = Usuario.objects.all()
+        serializer = UsuarioSerializer(usuarios, many=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
     def me(self, request):
